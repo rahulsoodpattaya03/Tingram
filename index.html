@@ -1,0 +1,836 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tingram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Italiana&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --red:#A3000F; --red-hot:#D21F1F; --wine:#6E0716; --deep:#2A0306; --ink:#050505; --white:#FFFFFF;
+  --muted:#CFCFCF; --soft:#A8A8A8; --glass:rgba(10,10,10,.55); --line:rgba(255,255,255,.14);
+  --silver:linear-gradient(180deg,#CFCFCF 0%,#E9E9E9 45%,#F5F5F5 100%);
+  --photo:linear-gradient(180deg,#7A0A1E 0%,#D21F1F 55%,#2A0306 100%);
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--ink:#050505}}
+:root[data-theme="dark"]{--ink:#050505}
+html{height:100%;background:#050505;scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;height:100%;background:#050505;color:var(--white);font-family:Manrope,"Helvetica Neue",Arial,sans-serif;overflow:hidden}
+button,input{font-family:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.serif{font-family:Italiana,Didot,"Bodoni 72",Georgia,serif;font-weight:400}
+#app{position:relative;height:100%;max-width:440px;margin:0 auto;overflow:hidden;background:linear-gradient(180deg,var(--wine) 0%,var(--deep) 42%,var(--ink) 100%)}
+.scroll{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:20px 20px 110px;-webkit-overflow-scrolling:touch}
+.row{display:flex;align-items:center;gap:10px}
+.col{display:flex;flex-direction:column;gap:10px}
+.between{justify-content:space-between}
+h1{margin:0;font-size:40px;line-height:1}
+.sub{font-size:13.5px;color:var(--muted);line-height:1.45;margin:0}
+.btn{height:54px;border-radius:27px;border:0;font-size:15px;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;width:100%}
+.btn-white{background:#fff;color:#050505}
+.btn-ghost{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.25)}
+.btn-red{background:var(--red);color:#fff}
+.btn[disabled]{opacity:.4;cursor:not-allowed}
+.icon-btn{width:44px;height:44px;border-radius:22px;border:1px solid var(--line);background:var(--glass);color:#fff;display:flex;align-items:center;justify-content:center;position:relative;flex-shrink:0;backdrop-filter:blur(12px)}
+.icon-btn.white{background:#fff;color:#050505;border-color:#fff}
+.dot-badge{position:absolute;top:6px;right:6px;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:#FF3B3B;color:#fff;font-size:10px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.glass{background:var(--glass);border:1px solid var(--line);backdrop-filter:blur(12px)}
+.chip{height:34px;padding:0 14px;border-radius:17px;border:1px solid rgba(255,255,255,.28);background:transparent;color:#fff;font-size:13px;font-weight:700;white-space:nowrap}
+.chip.on{background:#fff;color:#050505;border-color:#fff}
+.tag{display:inline-flex;align-items:center;gap:5px;height:24px;padding:0 10px;border-radius:12px;background:#fff;color:#050505;font-size:10.5px;font-weight:800;letter-spacing:.04em}
+.seg{display:grid;gap:4px;padding:4px;border-radius:24px}
+.seg button{height:40px;border-radius:20px;border:0;background:transparent;color:inherit;font-size:13px;font-weight:800;transition:background .25s,color .25s}
+.seg button.on{background:#fff;color:#050505}
+.seg.light{background:#DADADA;color:#050505}
+.seg.light button.on{background:#050505;color:#fff}
+.photo{background:var(--photo);position:relative;overflow:hidden}
+.sil{position:absolute;bottom:0;left:0;width:100%;fill:rgba(255,255,255,.12);pointer-events:none}
+.initial{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:44px;color:rgba(255,255,255,.22)}
+.label-sm{font-size:12px;font-weight:800;color:#E6E6E6;letter-spacing:.02em;margin:6px 0 2px}
+input.field{height:52px;border-radius:26px;border:1px solid rgba(255,255,255,.22);background:rgba(255,255,255,.08);color:#fff;padding:0 18px;font-size:15px;width:100%;outline:none}
+input.field::placeholder{color:#bdbdbd}
+/* nav */
+.nav{position:absolute;left:16px;right:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));height:64px;border-radius:32px;background:rgba(12,12,12,.78);border:1px solid rgba(255,255,255,.12);backdrop-filter:blur(14px);display:flex;align-items:center;justify-content:space-around;padding:0 6px;z-index:20}
+.nav button{width:48px;height:48px;border-radius:24px;border:0;background:transparent;color:#fff;display:flex;align-items:center;justify-content:center}
+.nav button.on{background:var(--red);box-shadow:0 0 0 0 rgba(163,0,15,.6);animation:pulse 2.4s ease infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(163,0,15,.6)}50%{box-shadow:0 0 0 8px rgba(163,0,15,0)}}
+/* deck */
+.deck{position:relative;height:440px;margin-top:6px}
+.card{position:absolute;inset:0;border-radius:32px;touch-action:pan-y;user-select:none}
+.card.back{transform:translateY(16px) scale(.94);opacity:.7}
+.card .shade{position:absolute;left:0;right:0;bottom:0;height:220px;background:linear-gradient(180deg,rgba(5,5,5,0),rgba(5,5,5,.92) 75%);pointer-events:none}
+.card .info{position:absolute;left:18px;right:80px;bottom:18px;display:flex;flex-direction:column;gap:8px;pointer-events:none}
+.card .stamp{position:absolute;top:34px;padding:4px 14px;border:3px solid;border-radius:10px;font-size:26px;font-weight:800;letter-spacing:.08em;opacity:0;pointer-events:none}
+.side-pill{position:absolute;right:12px;bottom:120px;display:flex;flex-direction:column;gap:10px;padding:8px;border-radius:28px;z-index:3}
+.side-pill button{width:42px;height:42px;border-radius:21px;border:0;background:rgba(255,255,255,.14);color:#fff;display:flex;align-items:center;justify-content:center}
+.side-pill button.like{background:#fff;color:var(--red)}
+.mini-chip{height:28px;padding:0 12px;border-radius:14px;background:rgba(255,255,255,.14);border:1px solid rgba(255,255,255,.22);font-size:12px;font-weight:700;display:inline-flex;align-items:center}
+.actions{display:flex;justify-content:center;align-items:center;gap:22px;margin-top:22px}
+.round{border-radius:50%;border:1px solid var(--line);background:var(--glass);color:#fff;display:flex;align-items:center;justify-content:center}
+/* stories */
+.stories{display:flex;gap:12px;overflow-x:auto;padding:4px 2px 6px;scrollbar-width:none}
+.stories::-webkit-scrollbar{display:none}
+.story{display:flex;flex-direction:column;align-items:center;gap:4px;width:64px;flex-shrink:0;background:none;border:0;color:#fff;padding:0}
+.story .ring{width:60px;height:60px;border-radius:30px;padding:3px;border:2px solid #fff}
+.story .ring.seen{border-color:rgba(255,255,255,.3)}
+.story .in{width:100%;height:100%;border-radius:50%;overflow:hidden;position:relative;background:var(--photo)}
+.story .in img,.story .in video{width:100%;height:100%;object-fit:cover}
+.story span{font-size:11px;font-weight:700;max-width:64px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.story small{font-size:10px;color:#FFB3BA;margin-top:-3px}
+/* overlays */
+.overlay{position:absolute;inset:0;z-index:40;background:linear-gradient(180deg,var(--wine) 0%,var(--deep) 42%,var(--ink) 100%);animation:slideUp .32s cubic-bezier(.2,.8,.2,1)}
+.overlay.dark{background:#000}
+@keyframes slideUp{from{transform:translateY(30px);opacity:0}to{transform:none;opacity:1}}
+.toast{position:absolute;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top,0px));z-index:60;padding:12px 14px;border-radius:22px;display:flex;align-items:center;gap:12px;animation:drop .4s cubic-bezier(.2,.8,.2,1);cursor:pointer}
+@keyframes drop{from{transform:translateY(-120%);opacity:0}to{transform:none;opacity:1}}
+.toast.hide{transition:transform .35s,opacity .35s;transform:translateY(-120%);opacity:0}
+/* chat */
+.msgs{position:absolute;left:0;right:0;top:150px;bottom:92px;overflow-y:auto;padding:10px 16px;display:flex;flex-direction:column;gap:10px}
+.bubble{max-width:78%;padding:11px 15px;font-size:15px;line-height:1.4;animation:slideUp .25s ease;white-space:pre-wrap;word-wrap:break-word}
+.bubble.me{align-self:flex-end;background:var(--red);border-radius:22px 22px 6px 22px}
+.bubble.av{background:#fff;color:#050505;border-radius:22px 22px 22px 6px}
+.who{font-size:10.5px;font-weight:800;color:#FFB3BA;letter-spacing:.04em}
+.typing{display:flex;gap:5px;padding:14px 16px;background:#fff;border-radius:22px;align-self:flex-start}
+.typing i{width:7px;height:7px;border-radius:4px;background:#050505;animation:bounce 1.2s infinite}
+.typing i:nth-child(2){animation-delay:.15s}.typing i:nth-child(3){animation-delay:.3s}
+@keyframes bounce{0%,60%,100%{transform:translateY(0);opacity:.5}30%{transform:translateY(-5px);opacity:1}}
+.composer{position:absolute;left:14px;right:14px;bottom:calc(18px + env(safe-area-inset-bottom,0px));display:flex;gap:10px}
+.composer input{flex:1;height:54px;border-radius:27px;border:0;background:#fff;color:#050505;padding:0 18px;font-size:15px;outline:none;min-width:0}
+/* dial */
+.dial{position:relative;width:280px;height:280px;margin:4px auto 0}
+.dial .hr{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:15px;border:0;background:transparent;color:rgba(255,255,255,.55);font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;padding:0}
+.dial .hr.in{color:#fff}
+.dial .hr.end{background:#fff;color:#050505}
+.dial .center{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:132px;height:132px;border-radius:66px;background:rgba(10,10,10,.72);border:1px solid rgba(255,255,255,.18);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;text-align:center}
+/* grid */
+.mgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.tile{border-radius:16px;overflow:hidden;position:relative;border:0;padding:0;color:#fff;background:var(--photo)}
+.tile img,.tile video{width:100%;height:100%;object-fit:cover;display:block}
+.tile .meta{position:absolute;left:8px;bottom:7px;font-size:11px;font-weight:800;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.tile .play{position:absolute;left:50%;top:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:17px;background:rgba(255,255,255,.92);color:#050505;display:flex;align-items:center;justify-content:center}
+.tile .gif{position:absolute;top:8px;left:8px;height:20px;padding:0 7px;border-radius:6px;background:#fff;color:#050505;font-size:10px;font-weight:900;display:flex;align-items:center}
+.list-row{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.08);background:none;border-left:0;border-right:0;border-top:0;color:#fff;width:100%;text-align:left}
+.av{width:46px;height:46px;border-radius:23px;flex-shrink:0;position:relative;overflow:hidden;background:var(--photo);display:flex;align-items:center;justify-content:center;font-weight:800}
+.silver{background:var(--silver);color:#050505}
+.progress{height:3px;border-radius:2px;background:rgba(255,255,255,.3);overflow:hidden}
+.progress i{display:block;height:100%;background:#fff;width:0}
+.scan{position:absolute;left:0;right:0;top:0;height:3px;background:#fff;box-shadow:0 0 16px 4px rgba(255,255,255,.8);animation:scan 2.4s ease-in-out infinite}
+@keyframes scan{0%,100%{transform:translateY(0)}50%{transform:translateY(170px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden-input{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+@media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div id="app" aria-live="polite"></div>
+<script>
+(function(){
+'use strict';
+/* ---------- tiny helpers ---------- */
+const $app = document.getElementById('app');
+function h(tag, attrs, ...kids){
+  const el = document.createElementNS(tag==='svg'||tag==='path'||tag==='circle'||tag==='rect'||tag==='g' ? 'http://www.w3.org/2000/svg' : 'http://www.w3.org/1999/xhtml', tag);
+  if (attrs) for (const k in attrs){
+    const v = attrs[k];
+    if (v == null || v === false) continue;
+    if (k.startsWith('on') && typeof v === 'function') el.addEventListener(k.slice(2).toLowerCase(), v);
+    else if (k === 'class') el.setAttribute('class', v);
+    else if (k === 'style') el.setAttribute('style', v);
+    else if (k === 'html') el.innerHTML = v; /* only used for our own static SVG icons */
+    else if (k in el && typeof v !== 'string' && el.namespaceURI === 'http://www.w3.org/1999/xhtml') el[k] = v;
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat(Infinity)){
+    if (c == null || c === false) continue;
+    el.appendChild(typeof c === 'string' || typeof c === 'number' ? document.createTextNode(String(c)) : c);
+  }
+  return el;
+}
+const ICONS = {
+  heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  x:'<path d="M6 6l12 12M18 6L6 18"/>', chat:'<path d="M4 5h16v11H8l-4 4z"/>',
+  home:'<path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/>', grid:'<rect x="4" y="4" width="7" height="7" rx="2"/><rect x="13" y="4" width="7" height="7" rx="2"/><rect x="4" y="13" width="7" height="7" rx="2"/><rect x="13" y="13" width="7" height="7" rx="2"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>', user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4.5-6 8-6s7 2 8 6"/>',
+  back:'<path d="M15 5l-7 7 7 7"/>', bell:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',
+  check:'<path d="M5 12l5 5 9-10"/>', plus:'<path d="M12 5v14M5 12h14"/>', camera:'<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>',
+  play:'<path d="M8 5l11 7-11 7z"/>', lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+  mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>', spark:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6 6l2.5 2.5M15.5 15.5L18 18M6 18l2.5-2.5M15.5 8.5L18 6"/>',
+  send:'<path d="M4 12l16-8-6 16-3-7z"/>', pin:'<path d="M12 21s-7-6.2-7-12a7 7 0 0 1 14 0c0 5.8-7 12-7 12z"/><circle cx="12" cy="9" r="2.5"/>',
+  eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>', star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/>', eyeoff:'<path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 6c6 0 10 6 10 6a17 17 0 0 1-3.2 3.8M6.6 6.6A17 17 0 0 0 2 12s4 7 10 7a9.6 9.6 0 0 0 4.2-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
+  video:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/>', trash:'<path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/>'
+};
+function ic(name, size, fill){
+  size = size || 20;
+  const a = fill ? 'fill="currentColor"' : 'fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"';
+  const s = document.createElement('span');
+  s.style.display = 'inline-flex';
+  s.setAttribute('aria-hidden','true');
+  s.innerHTML = '<svg width="'+size+'" height="'+size+'" viewBox="0 0 24 24" '+a+'>'+ICONS[name]+'</svg>';
+  return s;
+}
+function sil(){ const s=document.createElement('span'); s.innerHTML='<svg class="sil" viewBox="0 0 100 100"><circle cx="50" cy="40" r="17"/><path d="M16 100c2-22 16-36 34-36s32 14 34 36z"/></svg>'; return s.firstChild; }
+const pad = n => String(n).padStart(2,'0');
+const hh = n => pad(((n%24)+24)%24)+':00';
+const now = () => Date.now();
+const DAY = 24*3600*1000;
+function ago(ts){ const m=Math.round((now()-ts)/60000); if(m<1) return 'now'; if(m<60) return m+'m'; const hrs=Math.round(m/60); if(hrs<24) return hrs+'h'; return Math.round(hrs/24)+'d'; }
+function left(ts){ const ms=ts+DAY-now(); if(ms<=0) return 'expired'; const hrs=Math.floor(ms/3600000), m=Math.floor((ms%3600000)/60000); return hrs+'h '+m+'m'; }
+
+/* ---------- demo people ---------- */
+const PEOPLE = [
+  {id:'lena', name:'Lena', age:26, km:2, bio:'Sunsets at the pier, bad karaoke, good coffee.', tags:['Beach','Karaoke','Coffee'], likesYou:true, plan:{s:19,e:21,act:'Dinner'}, flashH:20, vibe:'warm and playful'},
+  {id:'mai', name:'Mai', age:24, km:3, bio:'Weekend diver. Weekday designer.', tags:['Diving','Design','Street food'], likesYou:true, plan:{s:20,e:23,act:'Drinks'}, flashH:5, vibe:'curious and witty'},
+  {id:'olivia', name:'Olivia', age:27, km:4, bio:'Looking for someone to try every rooftop with.', tags:['Rooftops','Photography','Travel'], likesYou:false, plan:{s:18,e:20,act:'Gym'}, flashH:11, vibe:'confident and direct'},
+  {id:'sarah', name:'Sarah', age:25, km:1, bio:'Books, live music, late dinners.', tags:['Books','Live music','Food'], likesYou:true, plan:{s:21,e:24,act:'Live music'}, flashH:16, vibe:'gentle and thoughtful'},
+  {id:'priya', name:'Priya', age:28, km:6, bio:'Chef by day. Salsa by night.', tags:['Cooking','Salsa','Markets'], likesYou:false, plan:{s:17,e:19,act:'Beach'}, flashH:23, vibe:'energetic and funny'},
+  {id:'nina', name:'Nina', age:29, km:5, bio:'Yoga, scooters and spicy som tam.', tags:['Yoga','Scooters','Thai food'], likesYou:true, plan:{s:7,e:9,act:'Gym'}, flashH:8, vibe:'calm and sunny'}
+];
+const byId = id => PEOPLE.find(p=>p.id===id);
+const STRANGERS = [{id:'kai',name:'Kai',age:29},{id:'ravi',name:'Ravi',age:31},{id:'tom',name:'Tom',age:33}];
+
+/* ---------- state ---------- */
+const KEY='tingram.v1';
+const DEFAULT = () => ({
+  me:null,
+  avatar:{front:null, side:null, video:false, voice:false, created:false, createdAt:0},
+  settings:{strangers:'avatar', matches:'me'},
+  allowed:{},
+  liked:[], passed:[], matches:[],
+  chats:{},
+  plans:[], nextHour:null,
+  flash:null, seenFlash:{},
+  moments:[],
+  chatModes:{}, defaultMode:'keep',
+  vanish:{all:false, hideFrom:[]},
+  notes:[
+    {id:1,title:'Welcome to Tingram',sub:'Strangers meet your AI avatar first. You decide who meets you.',ts:now(),read:false,kind:'spark'}
+  ]
+});
+let S;
+try { S = Object.assign(DEFAULT(), JSON.parse(localStorage.getItem(KEY)||'null')||{}); } catch(e){ S = DEFAULT(); }
+let saveTimer=null;
+function save(){ clearTimeout(saveTimer); saveTimer=setTimeout(()=>{ try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){ /* storage full or blocked: keep running in memory */ } },150); }
+const session = { videos:{}, momentBlobs:{}, flashBlob:null }; // videos can't be stored offline; kept for this visit
+
+const V = { tab:'discover', overlay:null, chatId:null, mediaTab:'Photos', pick:'start', sel:{s:20,e:23}, act:'Drinks', planNote:'', deckIdx:0, typing:false, building:false, editAvatar:false };
+
+/* ---------- AI (Claude) for avatar replies ---------- */
+let sample = null;
+try { if (window.claude && typeof window.claude.use === 'function') window.claude.use('sample').then(s=>{ sample = s; }).catch(()=>{}); } catch(e){}
+const CANNED = [
+  "That’s sweet of you to say! What are you up to tonight?",
+  "Ha, I like your style. Tell me one place in town you’d take a first date.",
+  "I’m the avatar for now — if we click, I’ll let the real me know you’re worth meeting.",
+  "Good question! I’d say a long dinner beats a loud club. You?",
+  "You seem fun. What’s on your plans watch for the next few hours?"
+];
+async function avatarReply(person, history){
+  if (sample){
+    const transcript = history.slice(-12).map(m => (m.from==='me'?'Visitor':'Avatar')+': '+m.text).join('\n');
+    const prompt = 'You are the AI avatar of '+person.name+', '+person.age+', on the dating app Tingram. '+
+      'Profile: "'+person.bio+'". Interests: '+person.tags.join(', ')+'. Personality: '+person.vibe+'. '+
+      'Today they plan '+person.plan.act.toLowerCase()+' from '+hh(person.plan.s)+' to '+hh(person.plan.e)+'. '+
+      'A visitor is chatting with you before '+person.name+' has allowed a real chat. You speak for '+person.name+' as their avatar: friendly, flirty but respectful, never sexual. '+
+      'Never claim to be the real person, never share contact details, addresses or exact locations, never agree to meet on their behalf — say '+person.name+' decides that. '+
+      'Reply in the visitor’s language, 1–2 short sentences, no emoji spam, no quotation marks.\n\nConversation:\n'+transcript+'\n\nAvatar:';
+    try {
+      const r = await sample(prompt, { modelTier:'quick', cache:false });
+      const t = (r && r.text || '').trim();
+      if (t) return t.replace(/^Avatar:\s*/i,'');
+    } catch(e){ if (e && e.code==='not_granted') sample = null; }
+  }
+  const n = history.filter(m=>m.from==='av').length;
+  return CANNED[n % CANNED.length];
+}
+
+/* ---------- notifications / toast ---------- */
+function notify(title, sub, kind, go){
+  S.notes.unshift({id:now()+Math.random(), title, sub, ts:now(), read:false, kind:kind||'bell', go:go||null});
+  S.notes = S.notes.slice(0,40);
+  save();
+  const t = h('div',{class:'toast glass', role:'status', onclick:()=>{ t.remove(); if(go) openGo(go); else { V.overlay='notes'; render(); } }},
+    h('div',{class:'av', style:'width:40px;height:40px'}, ic(kind||'bell',18)),
+    h('div',{style:'flex:1;min-width:0'}, h('div',{style:'font-size:13px;font-weight:800'}, title), h('div',{style:'font-size:12px;color:#D0D0D0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap'}, sub)),
+    h('div',{style:'font-size:11px;color:#BDBDBD'},'now'));
+  $app.appendChild(t);
+  setTimeout(()=>{ t.classList.add('hide'); setTimeout(()=>t.remove(),400); }, 3600);
+  updateBell();
+}
+function updateBell(){
+  document.querySelectorAll('[data-bell]').forEach(b=>{
+    const n = unread(); let d = b.querySelector('.dot-badge');
+    if (!n){ if (d) d.remove(); return; }
+    if (!d){ d = h('span',{class:'dot-badge'}); b.appendChild(d); }
+    d.textContent = n>9 ? '9+' : String(n);
+    b.setAttribute('aria-label','Notifications ('+n+' new)');
+  });
+}
+function openGo(go){ if(go.chat){ V.overlay='chat'; V.chatId=go.chat; } else if(go.tab){ V.overlay=null; V.tab=go.tab; } render(); }
+const unread = () => S.notes.filter(n=>!n.read).length;
+/* ---------- message modes + vanish mode ---------- */
+const MODES = {keep:'Keep chat', once:'View once', after:'Delete after viewing', '24h':'Delete after 24 hours'};
+const MODE_SUB = {keep:'Messages stay until you delete them', once:'Each message opens one time, then it’s gone', after:'The whole chat clears when you leave it', '24h':'Messages disappear a day after they’re sent'};
+function modeOf(id){ return (S.chatModes && S.chatModes[id]) || S.defaultMode || 'keep'; }
+function hiddenFrom(id){ return !!(S.vanish && (S.vanish.all || S.vanish.hideFrom.includes(id))); }
+function closeChat(id){
+  const mode = modeOf(id); let msgs = S.chats[id] || [];
+  if (mode==='after') msgs = [];
+  else if (mode==='once') msgs = msgs.map(m => (!m.gone && m.once && ((m.from==='me' && m.read) || (m.from!=='me' && m.opened))) ? {from:m.from, gone:true, ts:m.ts} : m);
+  S.chats[id] = msgs; save();
+}
+
+/* ---------- media utils ---------- */
+function fileToDataURL(file){
+  return new Promise((res, rej)=>{ const fr=new FileReader(); fr.onload=()=>res(fr.result); fr.onerror=()=>rej(new Error('That file could not be read. Try another photo.')); fr.readAsDataURL(file); });
+}
+async function readImage(file, max){
+  if (file.type === 'image/gif'){
+    if (file.size > 2.5*1024*1024) throw new Error('GIF is larger than 2.5 MB');
+    return fileToDataURL(file);
+  }
+  const data = await fileToDataURL(file);
+  return new Promise((res, rej)=>{
+    const img = new Image();
+    img.onload = () => {
+      try {
+        const k = Math.min(1, (max||900)/Math.max(img.naturalWidth||img.width, img.naturalHeight||img.height));
+        const c=document.createElement('canvas'); c.width=Math.max(1,Math.round((img.naturalWidth||img.width)*k)); c.height=Math.max(1,Math.round((img.naturalHeight||img.height)*k));
+        c.getContext('2d').drawImage(img,0,0,c.width,c.height); res(c.toDataURL('image/jpeg',.82));
+      } catch(e){ res(data); }
+    };
+    img.onerror = () => rej(new Error('This photo format isn’t supported here. Use a JPG or PNG (on iPhone: Settings › Camera › Formats › Most Compatible).'));
+    img.src = data;
+  });
+}
+async function readVideo(file){
+  if (!file.type.startsWith('video/')) throw new Error('Choose a short video');
+  if (file.size <= 25*1024*1024) { try { return await fileToDataURL(file); } catch(e){} }
+  try { return URL.createObjectURL(file); } catch(e){ return null; }
+}
+function pickFile(accept, capture, cb){
+  document.querySelectorAll('input.hidden-input').forEach(x=>x.remove());
+  const inp = h('input',{type:'file', accept, class:'hidden-input', tabindex:'-1', 'aria-hidden':'true'});
+  if (capture) inp.setAttribute('capture', capture);
+  inp.addEventListener('change', ()=>{ const f = inp.files && inp.files[0]; inp.remove(); if (f) cb(f); });
+  document.body.appendChild(inp); inp.click();
+}
+
+/* ---------- shared bits ---------- */
+function bellBtn(){
+  const n = unread();
+  return h('button',{class:'icon-btn', 'aria-label':'Notifications'+(n?' ('+n+' new)':''), 'data-bell':'1', onclick:()=>{ V.overlay='notes'; render(); }}, ic('bell',20), n? h('span',{class:'dot-badge'}, String(n>9?'9+':n)) : null);
+}
+function avatarImg(size){
+  const a = S.avatar;
+  const box = h('div',{class:'photo', style:'width:'+size+'px;height:'+size+'px;border-radius:50%;flex-shrink:0'});
+  if (a.front){ box.appendChild(h('img',{src:a.front, alt:'Your AI avatar', style:'width:100%;height:100%;object-fit:cover;filter:grayscale(1) contrast(1.15)'})); box.appendChild(h('div',{style:'position:absolute;inset:0;background:#A3000F;mix-blend-mode:multiply;opacity:.75'})); }
+  else box.appendChild(sil());
+  return box;
+}
+function personPic(p, size){
+  const b = h('div',{class:'av', style:size?('width:'+size+'px;height:'+size+'px;border-radius:'+size/2+'px'):''});
+  b.appendChild(sil()); b.appendChild(h('span',{style:'position:relative;font-size:'+(size?size*0.38:17)+'px'}, p.name[0]));
+  return b;
+}
+function nav(){
+  const items=[['discover','Discover','home'],['moments','Moments','grid'],['plans','Plans','clock'],['chats','Chats','chat'],['me','Me','user']];
+  return h('nav',{class:'nav', 'aria-label':'Main'}, items.map(([k,l,i])=>h('button',{class:V.tab===k?'on':'', 'aria-label':l, 'aria-current':V.tab===k?'page':null, onclick:()=>{V.tab=k; V.overlay=null; render();}}, ic(i,22))));
+}
+function header(title, sub, right){
+  return h('div',{class:'row between', style:'align-items:flex-end;margin-bottom:12px'},
+    h('div',{class:'col', style:'gap:3px'}, h('h1',{class:'serif'}, title), sub? h('p',{class:'sub'}, sub):null),
+    h('div',{class:'row'}, right||null, bellBtn()));
+}
+
+/* ---------- screens: onboarding ---------- */
+function Welcome(){
+  return h('div',{class:'scroll', style:'padding:0;display:flex;flex-direction:column'},
+    h('div',{style:'position:relative;height:56%;display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 10px;overflow:hidden'},
+      [[-40,'#FFFFFF',210,'photo'],[30,null,250,'photo'],[-10,'#2A0005',230,'photo']].map(([mt],i)=>h('div',{style:'display:flex;flex-direction:column;gap:10px;margin-top:'+mt+'px;animation:'+(i%2?'none':'none')},
+        h('div',{class:i===1?'photo':'', style:'height:220px;border-radius:24px;position:relative;overflow:hidden;background:'+(i===0?'#fff':i===1?'':'var(--photo)')}, sil()),
+        h('div',{class:i===1?'':'photo', style:'height:220px;border-radius:24px;position:relative;overflow:hidden;background:'+(i===1?'#2A0005':'')}, sil())))),
+    h('div',{style:'flex:1;display:flex;flex-direction:column;gap:16px;padding:0 24px 36px;justify-content:flex-end;margin-top:-60px;position:relative;background:linear-gradient(180deg,rgba(5,5,5,0),#050505 30%)'},
+      h('div',{class:'serif', style:'font-size:22px;letter-spacing:.06em'}, 'Tingram'),
+      h('h1',{class:'serif', style:'font-size:46px'}, 'Meet someone worth the night out.'),
+      h('p',{class:'sub'}, 'Real people only. Strangers meet your AI avatar first — you decide who gets to talk to the real you.'),
+      h('button',{class:'btn btn-white', onclick:()=>{V.overlay='signup'; render();}}, 'Create account'),
+      h('p',{class:'sub', style:'text-align:center;font-size:12px'}, 'Demo app: your data stays on this device.')));
+}
+function Signup(){
+  const name = h('input',{class:'field', placeholder:'First name', 'aria-label':'First name', maxlength:'24', autocomplete:'given-name'});
+  const age = h('input',{class:'field', placeholder:'Age', 'aria-label':'Age', inputmode:'numeric', maxlength:'2'});
+  const err = h('p',{class:'sub', style:'color:#FFB3BA;min-height:18px'});
+  if (V.draftName) name.value = V.draftName; if (V.draftAge) age.value = V.draftAge;
+  const keepFields = ()=>{ V.draftName = name.value; V.draftAge = age.value; };
+  name.addEventListener('input', keepFields); age.addEventListener('input', keepFields);
+  return h('div',{class:'scroll', style:'display:flex;flex-direction:column;gap:14px;padding-top:28px'},
+    h('button',{class:'icon-btn', 'aria-label':'Back', onclick:()=>{V.overlay=null; render();}}, ic('back',20)),
+    h('h1',{class:'serif', style:'font-size:42px;margin-top:10px'}, 'About you'),
+    h('p',{class:'sub'}, 'Step 1 of 2. Next you’ll create your AI avatar — everyone needs one.'),
+    h('label',{class:'label-sm'}, 'Profile photos'),
+    h('div',{style:'display:grid;grid-template-columns:repeat(3,1fr);gap:10px'}, [0,1,2].map(i=>{
+      const src = (V.signupPhotos||[])[i];
+      const b = h('button',{class:'tile', style:'height:120px;'+(src?'':'background:rgba(255,255,255,.06);border:1.5px dashed rgba(255,255,255,.5)'), 'aria-label':(src?'Replace':'Add')+' photo '+(i+1), onclick:()=>{
+        keepFields(); V.photoErr=null;
+        pickFile('image/*', null, async f=>{ V.photoBusy=i; render(); try{ V.signupPhotos = V.signupPhotos||[]; V.signupPhotos[i] = await readImage(f, 900); V.signupPhotos = V.signupPhotos.filter(Boolean); }catch(e){ V.photoErr=e.message; } V.photoBusy=null; render(); });
+      }});
+      if (src){ b.appendChild(h('img',{src, alt:''})); if(i===0) b.appendChild(h('span',{class:'meta'}, 'Main')); }
+      else b.appendChild(h('span',{style:'display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:800'}, ic('camera',22), V.photoBusy===i ? 'Adding…' : (i===0?'Main photo':'Add photo')));
+      return b;
+    })),
+    V.photoErr ? h('p',{role:'alert', style:'margin:0;padding:10px 14px;border-radius:16px;background:#fff;color:#7A000C;font-size:13px;font-weight:700;line-height:1.4'}, V.photoErr) : h('p',{class:'sub', style:'font-size:12px'}, 'Take a photo or pick from your gallery. You can add more later in Me.'),
+    h('label',{class:'label-sm'}, 'Name'), name, h('label',{class:'label-sm'}, 'Age'), age, err,
+    h('button',{class:'btn btn-white', onclick:()=>{
+      const n = name.value.trim(); const a = parseInt(age.value,10);
+      if (!n) { err.textContent='Enter your first name.'; return; }
+      if (!(a>=18 && a<=99)) { err.textContent='Tingram is for adults 18 and over.'; return; }
+      S.me = {name:n, age:a, photos:(V.signupPhotos||[]).slice(0,6)}; V.overlay=null; save(); render();
+    }}, 'Continue'));
+}
+function AvatarCreate(){
+  const a = S.avatar;
+  const done = a.front && a.side && a.video;
+  const slot = (key, label, accept, capture) => {
+    const has = key==='video' ? a.video : a[key];
+    const b = h('button',{class:'tile', style:'height:104px;'+(has?'':'background:rgba(255,255,255,.06);border:1.5px dashed rgba(255,255,255,.5)'), 'aria-label':(has?'Replace ':'Add ')+label, onclick:()=>{
+      V.avatarErr = null;
+      pickFile(accept, capture, async f=>{
+        V.avatarBusy = key; render();
+        try{
+          if (key==='video'){ session.videos.avatar = await readVideo(f); a.video = true; }
+          else { a[key] = await readImage(f, 700); }
+          V.avatarBusy = null; save(); render();
+        }catch(e){ V.avatarBusy = null; V.avatarErr = e.message; render(); notify('Couldn’t add that file', e.message, 'x'); }
+      });
+    }});
+    if (has){
+      if (key==='video' && session.videos.avatar) b.appendChild(h('video',{src:session.videos.avatar, muted:true, autoplay:true, loop:true, playsinline:true}));
+      else if (key!=='video') b.appendChild(h('img',{src:a[key], alt:''}));
+      else b.appendChild(sil());
+      b.appendChild(h('span',{style:'position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:11px;background:#fff;color:#050505;display:flex;align-items:center;justify-content:center'}, ic('check',13)));
+    } else b.appendChild(h('span',{style:'display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:800'}, ic(key==='video'?'video':'camera',22), V.avatarBusy===key ? 'Adding…' : label));
+    if (has) b.appendChild(h('span',{class:'meta'}, label));
+    return b;
+  };
+  return h('div',{class:'scroll', style:'display:flex;flex-direction:column;gap:16px;padding-bottom:36px'},
+    h('div',{class:'row'}, V.editAvatar? h('button',{class:'icon-btn', 'aria-label':'Back', onclick:()=>{V.editAvatar=false; render();}}, ic('back',20)) : null,
+      h('div',{class:'progress', style:'flex:1;height:4px'}, h('i',{style:'width:'+(V.editAvatar?100:50)+'%'})),
+      h('span',{style:'font-size:12px;font-weight:700'}, V.editAvatar?'Update':'Step 2 of 2')),
+    h('div',{class:'col', style:'gap:8px'},
+      h('span',{class:'tag', style:'align-self:flex-start'}, ic('lock',12), 'Required'),
+      h('h1',{class:'serif', style:'font-size:42px'}, 'Create your AI avatar'),
+      h('p',{class:'sub'}, 'Everyone on Tingram has one. Strangers talk to your avatar until you let them talk to you.')),
+    h('div',{style:'position:relative;width:200px;height:200px;align-self:center'},
+      h('div',{style:'position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(255,255,255,.55);animation:spin 12s linear infinite'}),
+      (()=>{ const w=h('div',{style:'position:absolute;inset:12px;border-radius:50%;overflow:hidden'}, avatarImg(176)); if(V.building) w.appendChild(h('div',{class:'scan'})); return w; })(),
+      h('div',{class:'glass', style:'position:absolute;left:50%;bottom:-8px;transform:translateX(-50%);height:30px;padding:0 14px;border-radius:15px;font-size:12px;font-weight:700;display:flex;align-items:center;white-space:nowrap'},
+        V.building ? 'Building your avatar…' : (done ? 'Ready to build' : (a.front?1:0)+(a.side?1:0)+(a.video?1:0)+' of 3 added'))),
+    h('div',{style:'display:grid;grid-template-columns:repeat(3,1fr);gap:10px'},
+      slot('front','Front photo','image/*',null), slot('side','Side photo','image/*',null), slot('video','5-sec video','video/*',null)),
+    V.avatarErr ? h('p',{role:'alert', style:'margin:0;padding:10px 14px;border-radius:16px;background:#fff;color:#7A000C;font-size:13px;font-weight:700;line-height:1.4'}, V.avatarErr) : h('p',{class:'sub', style:'text-align:center;font-size:12px;margin-top:-4px'}, 'Tap a box to take a photo or pick one from your gallery'),
+    h('button',{class:'btn btn-ghost', 'aria-pressed':a.voice?'true':'false', onclick:()=>{ a.voice=!a.voice; save(); render(); }}, ic(a.voice?'check':'mic',18), a.voice?'Voice sample added':'Add a voice sample (optional)'),
+    h('button',{class:'btn btn-white', disabled:!done||V.building, onclick:()=>{
+      V.building=true; render();
+      setTimeout(()=>{ V.building=false; const first=!a.created; a.created=true; a.createdAt=now(); V.editAvatar=false; save(); render(); notify(first?'Your AI avatar is live':'Avatar updated', 'Strangers will meet your avatar first', 'spark', {tab:'me'}); }, 2400);
+    }}, V.building?'Building…': (V.editAvatar?'Save avatar':'Create my avatar')),
+    h('div',{class:'row', style:'justify-content:center;gap:6px;font-size:12px;color:#BDBDBD'}, ic('lock',13), done?'Your photos stay on this device in this demo':'Add both photos and the video to continue'));
+}
+
+/* ---------- Discover ---------- */
+function deck(){ return PEOPLE.filter(p=>!S.liked.includes(p.id) && !S.passed.includes(p.id)); }
+function decide(p, liked){
+  if (liked){ S.liked.push(p.id); if (p.likesYou){ if(!S.matches.includes(p.id)) S.matches.push(p.id); save(); V.overlay='match'; V.chatId=p.id; render(); notify('New match with '+p.name, 'Her AI avatar is ready to chat', 'heart', {chat:p.id}); return; } }
+  else S.passed.push(p.id);
+  save(); render();
+}
+function Discover(){
+  const list = deck(); const p = list[0], next = list[1];
+  const myFlash = S.flash && now()-S.flash.ts < DAY ? S.flash : null;
+  const stories = h('div',{class:'stories', 'aria-label':'Flashes'},
+    h('button',{class:'story', onclick:()=>{ if(myFlash){ V.overlay='flash'; V.chatId='me'; render(); } else postFlash(); }},
+      h('div',{class:'ring'+(myFlash?'':' seen')}, h('div',{class:'in'}, myFlash ? (myFlash.type==='image' ? h('img',{src:myFlash.src, alt:''}) : sil()) : h('span',{style:'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;color:#050505'}, ic('plus',22)))),
+      h('span',null,'Your flash'), h('small',null, myFlash? left(myFlash.ts)+' left':'post')),
+    PEOPLE.map(q=>h('button',{class:'story', onclick:()=>{ S.seenFlash[q.id]=true; save(); V.overlay='flash'; V.chatId=q.id; render(); }},
+      h('div',{class:'ring'+(S.seenFlash[q.id]?' seen':'')}, h('div',{class:'in'}, sil())), h('span',null,q.name), h('small',null,q.flashH+'h left'))));
+  let deckEl;
+  if (!p){
+    deckEl = h('div',{class:'deck glass', style:'border-radius:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px;text-align:center'},
+      h('div',{class:'serif', style:'font-size:30px'}, 'You’ve seen everyone nearby'),
+      h('p',{class:'sub'}, 'Check back later, or start over to see the same people again.'),
+      h('button',{class:'chip on', onclick:()=>{ S.passed=[]; S.liked=S.liked.filter(id=>S.matches.includes(id)); save(); render(); }}, 'Start over'));
+  } else {
+    const card = h('div',{class:'card photo', role:'group', 'aria-label':p.name+', '+p.age},
+      sil(), h('div',{class:'initial serif', style:'font-size:140px;align-items:flex-start;padding-top:40px'}, p.name[0]),
+      h('div',{class:'stamp', 'data-like':'1', style:'left:22px;color:#fff;border-color:#fff;transform:rotate(-14deg)'}, 'LIKE'),
+      h('div',{class:'stamp', 'data-nope':'1', style:'right:22px;color:#FFB3BA;border-color:#FFB3BA;transform:rotate(14deg)'}, 'PASS'),
+      h('div',{class:'glass', style:'position:absolute;top:16px;left:16px;height:28px;padding:0 12px;border-radius:14px;font-size:11.5px;font-weight:700;display:flex;align-items:center;gap:6px'}, ic('spark',13), 'Talks to strangers via AI avatar'),
+      h('div',{class:'shade'}),
+      h('div',{class:'info'},
+        h('div',{class:'row', style:'gap:6px;font-size:13px;color:#eee'}, ic('pin',15), p.km+' km away · plans '+p.plan.act.toLowerCase()+' '+hh(p.plan.s)+'–'+hh(p.plan.e)),
+        h('div',{class:'serif', style:'font-size:40px;line-height:1'}, p.name+', '+p.age),
+        h('div',{style:'font-size:13.5px;color:#E8E8E8;line-height:1.4'}, p.bio),
+        h('div',{class:'row', style:'gap:6px;flex-wrap:wrap'}, p.tags.map(t=>h('span',{class:'mini-chip'}, t)))),
+      h('div',{class:'side-pill glass'},
+        h('button',{'aria-label':'Pass', onclick:e=>{e.stopPropagation(); fling(card,-1,()=>decide(p,false));}}, ic('x',18)),
+        h('button',{class:'like', 'aria-label':'Like', onclick:e=>{e.stopPropagation(); fling(card,1,()=>decide(p,true));}}, ic('heart',18,true)),
+        h('button',{'aria-label':'Chat with '+p.name+'’s AI avatar', onclick:e=>{e.stopPropagation(); V.overlay='chat'; V.chatId=p.id; render();}}, ic('chat',18,true))));
+    attachSwipe(card, dir=>decide(p, dir>0));
+    deckEl = h('div',{class:'deck'}, next? h('div',{class:'card photo back'}, sil()) : null, card);
+  }
+  return h('div',{class:'scroll'},
+    header('Discover', null, null), stories, deckEl,
+    p? h('div',{class:'actions'},
+      h('button',{class:'round', style:'width:60px;height:60px', 'aria-label':'Pass', onclick:()=>{ const c=document.querySelector('.card:not(.back)'); fling(c,-1,()=>decide(p,false)); }}, ic('x',24)),
+      h('button',{class:'round', style:'width:76px;height:76px;background:var(--red);border:0', 'aria-label':'Like', onclick:()=>{ const c=document.querySelector('.card:not(.back)'); fling(c,1,()=>decide(p,true)); }}, ic('heart',30,true)),
+      h('button',{class:'round', style:'width:60px;height:60px', 'aria-label':'Chat with AI avatar', onclick:()=>{ V.overlay='chat'; V.chatId=p.id; render(); }}, ic('chat',22))) : null);
+}
+function fling(card, dir, done){
+  if (!card){ done(); return; }
+  card.style.transition='transform .35s ease, opacity .35s ease';
+  card.style.transform='translateX('+(dir*520)+'px) rotate('+(dir*22)+'deg)'; card.style.opacity='0';
+  setTimeout(done, 300);
+}
+function attachSwipe(card, cb){
+  let sx=0, dx=0, down=false;
+  const like = card.querySelector('[data-like]'), nope = card.querySelector('[data-nope]');
+  card.addEventListener('pointerdown', e=>{ if(e.target.closest('button')) return; down=true; sx=e.clientX; dx=0; card.setPointerCapture(e.pointerId); card.style.transition='none'; });
+  card.addEventListener('pointermove', e=>{ if(!down) return; dx=e.clientX-sx; card.style.transform='translateX('+dx+'px) rotate('+(dx/18)+'deg)'; like.style.opacity=Math.max(0,Math.min(1,dx/90)); nope.style.opacity=Math.max(0,Math.min(1,-dx/90)); });
+  const end = ()=>{ if(!down) return; down=false; if(Math.abs(dx)>100){ fling(card, dx>0?1:-1, ()=>cb(dx>0?1:-1)); } else { card.style.transition='transform .3s ease'; card.style.transform=''; like.style.opacity=0; nope.style.opacity=0; } };
+  card.addEventListener('pointerup', end); card.addEventListener('pointercancel', end);
+}
+function postFlash(){
+  pickFile('image/*,video/*', 'user', async f=>{
+    try{
+      if (f.type.startsWith('video/')){ session.flashBlob = await readVideo(f); S.flash = {type:'video', src:null, ts:now(), views:0}; }
+      else { S.flash = {type:'image', src: await readImage(f, 900), ts:now(), views:0}; }
+      save(); render(); notify('Flash posted', 'Visible for 24 hours', 'camera', {tab:'discover'});
+    }catch(e){ notify('Flash not posted', e.message, 'x'); }
+  });
+}
+
+/* ---------- Flash viewer ---------- */
+function FlashView(){
+  const isMe = V.chatId==='me'; const p = isMe? null : byId(V.chatId);
+  const f = isMe ? S.flash : null;
+  const bar = h('i'); setTimeout(()=>{ bar.style.transition='width 6s linear'; bar.style.width='100%'; }, 30);
+  const timer = setTimeout(()=>{ if(V.overlay==='flash'){ V.overlay=null; render(); } }, 6100);
+  let media;
+  if (isMe && f){ if (f.type==='image') media = h('img',{src:f.src, alt:'Your flash', style:'position:absolute;inset:0;width:100%;height:100%;object-fit:cover'}); else if (session.flashBlob) media = h('video',{src:session.flashBlob, autoplay:true, playsinline:true, muted:true, loop:true, style:'position:absolute;inset:0;width:100%;height:100%;object-fit:cover'}); else media = h('div',{class:'photo', style:'position:absolute;inset:0'}, sil(), h('div',{class:'initial', style:'font-size:14px;color:#fff'}, 'Video flashes play during the visit they were posted')); }
+  else media = h('div',{class:'photo', style:'position:absolute;inset:0'}, sil(), h('div',{class:'initial serif', style:'font-size:160px'}, p? p.name[0] : ''));
+  const expiresIn = isMe && f ? left(f.ts) : (p.flashH+'h 00m');
+  return h('div',{class:'overlay dark'}, media,
+    h('div',{style:'position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.5),rgba(0,0,0,0) 30%,rgba(0,0,0,0) 65%,rgba(0,0,0,.8))'}),
+    h('div',{style:'position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:14px;right:14px;display:flex;flex-direction:column;gap:12px'},
+      h('div',{class:'progress'}, bar),
+      h('div',{class:'row between'},
+        h('div',{class:'row'}, isMe? avatarImg(36) : personPic(p,36), h('div',null, h('div',{style:'font-weight:800;font-size:14px'}, isMe?'Your flash':p.name), h('div',{style:'font-size:11.5px;color:#ddd'}, 'Expires in '+expiresIn))),
+        h('button',{class:'icon-btn', 'aria-label':'Close', onclick:()=>{ clearTimeout(timer); V.overlay=null; render(); }}, ic('x',18)))),
+    h('div',{style:'position:absolute;left:14px;top:calc(92px + env(safe-area-inset-top,0px))'}, h('span',{class:'tag'}, ic('camera',12), 'Original · camera only')),
+    h('div',{style:'position:absolute;left:16px;right:16px;bottom:calc(26px + env(safe-area-inset-bottom,0px));display:flex;gap:10px;align-items:center'},
+      isMe ? h('div',{class:'row', style:'flex:1;color:#eee;font-size:13px'}, ic('eye',16), 'Seen by '+(3+Math.floor((now()-f.ts)/600000))+' people')
+           : h('button',{class:'btn btn-white', style:'flex:1', onclick:()=>{ clearTimeout(timer); V.overlay='chat'; V.chatId=p.id; render(); }}, 'Reply to '+p.name+'’s avatar'),
+      isMe ? h('button',{class:'chip on', onclick:()=>{ clearTimeout(timer); postFlash(); }}, 'Post new') : null));
+}
+
+/* ---------- Match overlay ---------- */
+function Match(){
+  const p = byId(V.chatId);
+  return h('div',{class:'overlay', style:'display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:30px'},
+    h('div',{class:'row', style:'gap:0'}, h('div',{style:'transform:rotate(-8deg);border:4px solid #fff;border-radius:28px;overflow:hidden;width:140px;height:186px;animation:slideUp .6s ease'}, h('div',{class:'photo', style:'width:100%;height:100%'}, S.avatar.front? h('img',{src:S.avatar.front, alt:'', style:'width:100%;height:100%;object-fit:cover'}) : sil())),
+      h('div',{style:'transform:rotate(8deg);margin-left:-20px;border:4px solid #fff;border-radius:28px;overflow:hidden;width:140px;height:186px;animation:slideUp .6s ease .1s both'}, h('div',{class:'photo', style:'width:100%;height:100%'}, sil(), h('div',{class:'initial serif', style:'font-size:80px'}, p.name[0])))),
+    h('div',{style:'width:64px;height:64px;border-radius:32px;background:var(--red);border:4px solid #fff;display:flex;align-items:center;justify-content:center;margin-top:-50px;position:relative'}, ic('heart',26,true)),
+    h('h1',{class:'serif', style:'font-size:54px;text-align:center'}, 'It’s a match'),
+    h('p',{class:'sub', style:'text-align:center'}, 'You and '+p.name+' liked each other. Her AI avatar will chat with you until she opens a real chat.'),
+    h('button',{class:'btn btn-white', onclick:()=>{ V.overlay='chat'; render(); }}, 'Say hello'),
+    h('button',{class:'btn btn-ghost', onclick:()=>{ V.overlay=null; render(); }}, 'Keep swiping'));
+}
+
+/* ---------- Chat with someone’s AI avatar ---------- */
+function Chat(){
+  const p = byId(V.chatId);
+  let msgs = S.chats[p.id] || (S.chats[p.id] = []);
+  const mode = modeOf(p.id);
+  if (mode==='24h'){ const kept = msgs.filter(m=>now()-m.ts < DAY); if (kept.length!==msgs.length){ msgs = S.chats[p.id] = kept; save(); } }
+  msgs.forEach(m=>{ m.seen = true; });
+  const hidden = hiddenFrom(p.id);
+  const avBubble = m => {
+    if (m.gone) return h('div',{class:'row', style:'align-self:flex-start;gap:6px;font-size:12px;color:#bbb;padding:7px 12px;border:1px dashed rgba(255,255,255,.3);border-radius:16px'}, ic('eye',14), 'Viewed once · gone');
+    if (m.once && !m.opened) return h('div',{style:'display:flex;flex-direction:column;gap:4px;align-self:flex-start'}, h('span',{class:'who'}, 'AI AVATAR'),
+      h('button',{class:'bubble av', style:'border:0;display:flex;align-items:center;gap:8px;font-weight:800;font-family:inherit', onclick:()=>{ m.opened=true; save(); render(); }}, ic('eye',16), 'Tap to view · once'));
+    return h('div',{style:'display:flex;flex-direction:column;gap:4px;align-self:flex-start;max-width:80%'}, h('span',{class:'who'}, 'AI AVATAR'), h('div',{class:'bubble av', style:'max-width:100%'}, m.text),
+      m.once ? h('span',{style:'font-size:10.5px;color:#ddd'}, 'Disappears when you leave this chat') : null);
+  };
+  const meBubble = m => {
+    if (m.gone) return h('div',{class:'row', style:'align-self:flex-end;gap:6px;font-size:12px;color:#bbb;padding:7px 12px;border:1px dashed rgba(255,255,255,.3);border-radius:16px'}, ic('eye',14), 'Opened · gone');
+    return h('div',{style:'display:flex;flex-direction:column;align-items:flex-end;gap:3px;align-self:flex-end;max-width:80%'}, h('div',{class:'bubble me', style:'max-width:100%'}, m.text),
+      m.once ? h('span',{style:'font-size:10.5px;color:#ddd;display:flex;align-items:center;gap:4px'}, ic('eye',12), m.read ? 'Opened' : 'View once') : null);
+  };
+  const box = h('div',{class:'msgs', style:'top:178px'},
+    msgs.length? null : h('div',{class:'sub', style:'text-align:center;margin:auto 0 8px'}, 'Say hi — '+p.name+'’s AI avatar replies for her.'),
+    msgs.map(m => m.from==='me' ? meBubble(m) : avBubble(m)),
+    V.typing? h('div',{class:'typing', 'aria-label':'Avatar is typing'}, h('i'),h('i'),h('i')) : null);
+  setTimeout(()=>{ box.scrollTop = box.scrollHeight; }, 0);
+  const input = h('input',{placeholder:(V.onceNext||mode==='once')?'View-once message':'Message '+p.name+'’s avatar', 'aria-label':'Message', maxlength:'400', enterkeyhint:'send'});
+  const send = async ()=>{
+    const t = input.value.trim(); if(!t || V.typing) return;
+    msgs.push({from:'me', text:t, ts:now(), once: mode==='once' || !!V.onceNext, seen:true}); V.onceNext=false; input.value=''; V.typing=true; save(); render();
+    const reply = await avatarReply(p, msgs.filter(m=>!m.gone && m.text));
+    msgs.forEach(m=>{ if (m.from==='me' && m.once) m.read = true; });
+    msgs.push({from:'av', text:reply, ts:now(), once: modeOf(p.id)==='once'}); V.typing=false; save();
+    if (V.overlay==='chat' && V.chatId===p.id) render(); else notify(p.name+'’s avatar replied', modeOf(p.id)==='once' ? 'View-once message' : reply, 'chat', {chat:p.id});
+    setTimeout(()=>{ const i=document.querySelector('.composer input'); if(i) i.focus(); }, 0);
+  };
+  input.addEventListener('keydown', e=>{ if(e.key==='Enter') send(); });
+  const leave = ()=>{ closeChat(p.id); V.overlay=null; V.sheet=null; V.typing=false; render(); };
+  const view = h('div',{class:'overlay'},
+    h('div',{class:'row', style:'position:absolute;top:0;left:0;right:0;padding:18px 16px 12px;border-bottom:1px solid rgba(255,255,255,.1)'},
+      h('button',{class:'icon-btn', 'aria-label':'Back', onclick:leave}, ic('back',20)),
+      h('div',{style:'position:relative'}, personPic(p,46), h('span',{style:'position:absolute;right:0;bottom:0;width:12px;height:12px;border-radius:6px;background:#4ADE80;border:2px solid #050505'})),
+      h('div',{style:'flex:1;min-width:0'}, h('div',{class:'row', style:'gap:6px;font-weight:800;font-size:16px'}, p.name, h('span',{class:'tag', style:'height:20px'}, 'AI AVATAR')),
+        h('div',{style:'font-size:12px;color:#D0D0D0'}, 'Online · replying for '+p.name)),
+      h('button',{class:'icon-btn', 'aria-label':'Message and privacy settings for '+p.name, onclick:()=>{ V.sheet='chat'; render(); }}, ic('timer',20))),
+    h('div',{class:'glass', style:'position:absolute;top:84px;left:14px;right:14px;padding:10px 14px;border-radius:18px;display:flex;flex-direction:column;gap:6px;font-size:12.5px;line-height:1.45;color:#eee'},
+      h('div',{class:'row', style:'align-items:flex-start;gap:8px'}, ic('spark',16), h('span',null, 'You’re talking to '+p.name+'’s AI avatar. '+p.name+' can open a real chat with you any time.')),
+      h('div',{class:'row', style:'gap:8px;flex-wrap:wrap'},
+        h('button',{class:'tag', style:'border:0;cursor:pointer;font-family:inherit', onclick:()=>{ V.sheet='chat'; render(); }}, ic('timer',12), MODES[mode]),
+        hidden ? h('span',{class:'tag', style:'background:#050505;color:#fff;border:1px solid rgba(255,255,255,.3)'}, ic('eyeoff',12), 'You appear offline') : null)),
+    box,
+    h('div',{class:'composer'},
+      h('button',{class:'round', style:'width:54px;height:54px;flex-shrink:0;font-weight:900;font-size:14px;font-family:inherit;'+((V.onceNext||mode==='once')?'background:#fff;color:#050505;border-color:#fff':''), 'aria-pressed':(V.onceNext||mode==='once')?'true':'false', 'aria-label':'Send next message as view once', disabled: mode==='once', onclick:()=>{ V.onceNext=!V.onceNext; render(); }}, '1×'),
+      input, h('button',{class:'round', style:'width:54px;height:54px;background:var(--red);border:0;flex-shrink:0', 'aria-label':'Send', onclick:send}, ic('send',20))),
+    V.sheet==='chat' ? ChatSheet(p) : null);
+  return view;
+}
+function ChatSheet(p){
+  const mode = modeOf(p.id);
+  const close = ()=>{ V.sheet=null; render(); };
+  const opt = k => h('button',{class:'row', role:'radio', 'aria-checked':mode===k?'true':'false', style:'width:100%;text-align:left;padding:12px 14px;border-radius:18px;border:0;font-family:inherit;color:#050505;gap:12px;background:'+(mode===k?'#050505':'rgba(0,0,0,.06)')+';color:'+(mode===k?'#fff':'#050505'), onclick:()=>{ S.chatModes[p.id]=k; save(); render(); notify('Chat with '+p.name+' updated', MODES[k], 'timer'); }},
+    h('span',{style:'width:20px;height:20px;border-radius:10px;flex-shrink:0;border:2px solid currentColor;display:flex;align-items:center;justify-content:center'}, mode===k ? h('span',{style:'width:10px;height:10px;border-radius:5px;background:currentColor'}) : null),
+    h('span',{style:'display:flex;flex-direction:column;gap:2px'}, h('span',{style:'font-size:14px;font-weight:800'}, MODES[k]), h('span',{style:'font-size:12px;opacity:.75'}, MODE_SUB[k])));
+  const hid = hiddenFrom(p.id);
+  return h('div',{style:'position:absolute;inset:0;z-index:10;background:rgba(0,0,0,.55);display:flex;align-items:flex-end', onclick:e=>{ if(e.target===e.currentTarget) close(); }},
+    h('div',{class:'silver', role:'dialog', 'aria-label':'Settings for '+p.name, style:'width:100%;max-height:88%;overflow-y:auto;border-radius:28px 28px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:10px;animation:slideUp .3s ease'},
+      h('div',{class:'row between'}, h('div',{class:'serif', style:'font-size:28px;color:#050505'}, 'Chat with '+p.name), h('button',{class:'icon-btn white', style:'border-color:#ccc', 'aria-label':'Close', onclick:close}, ic('x',18))),
+      h('div',{style:'font-size:12.5px;font-weight:800;color:#333;margin-top:4px'}, 'Messages'),
+      h('div',{role:'radiogroup', style:'display:flex;flex-direction:column;gap:8px'}, Object.keys(MODES).map(opt)),
+      h('button',{class:'chip', style:'align-self:flex-start;color:#050505;border-color:#999', onclick:()=>{ S.defaultMode=mode; S.chatModes={}; save(); render(); notify('Applied to everyone', MODES[mode]+' is now your setting for all chats', 'timer'); }}, 'Use “'+MODES[mode]+'” for everyone'),
+      h('div',{style:'font-size:12.5px;font-weight:800;color:#333;margin-top:8px'}, 'Vanish mode'),
+      h('button',{class:'row between', role:'switch', 'aria-checked':hid?'true':'false', disabled:S.vanish.all, style:'width:100%;padding:12px 14px;border-radius:18px;border:0;background:rgba(0,0,0,.06);color:#050505;font-family:inherit;text-align:left', onclick:()=>{ toggleHide(p.id); render(); }},
+        h('span',{style:'display:flex;flex-direction:column;gap:2px'}, h('span',{style:'font-size:14px;font-weight:800'}, 'Hide my online status from '+p.name), h('span',{style:'font-size:12px;opacity:.75'}, S.vanish.all ? 'Vanish mode is on for everyone (change it in Me)' : 'They won’t see when you’re online')),
+        sw(hid))));
+}
+function sw(on){ return h('span',{'aria-hidden':'true', style:'width:48px;height:28px;border-radius:14px;flex-shrink:0;position:relative;transition:background .2s;background:'+(on?'#A3000F':'#BDBDBD')}, h('span',{style:'position:absolute;top:3px;left:'+(on?'23px':'3px')+';width:22px;height:22px;border-radius:11px;background:#fff;transition:left .2s'})); }
+function toggleHide(id){ const i=S.vanish.hideFrom.indexOf(id); if(i>=0) S.vanish.hideFrom.splice(i,1); else S.vanish.hideFrom.push(id); save(); const name=(byId(id)||STRANGERS.find(x=>x.id===id)||{name:'them'}).name; notify(i>=0 ? name+' can see you online again' : 'Hidden from '+name, i>=0 ? 'Vanish mode off for '+name : 'You appear offline to '+name, 'eyeoff'); }
+
+/* ---------- Moments: photos, videos, reels, GIFs ---------- */
+const MTYPES = {Photos:{accept:'image/*', type:'photo'}, Videos:{accept:'video/*', type:'video'}, Reels:{accept:'video/*', type:'reel'}, GIFs:{accept:'image/gif', type:'gif'}};
+function Moments(){
+  const tab = V.mediaTab, cfg = MTYPES[tab];
+  const mine = S.moments.filter(m=>m.type===cfg.type);
+  const tall = tab==='Reels';
+  const add = ()=> pickFile(cfg.accept, null, async f=>{
+    try{
+      const id = now();
+      if (cfg.type==='video' || cfg.type==='reel'){ session.momentBlobs[id]=await readVideo(f); S.moments.unshift({id, type:cfg.type, src:null, ts:now()}); }
+      else { if (cfg.type==='gif' && f.type!=='image/gif') throw new Error('Choose a .gif file'); S.moments.unshift({id, type:cfg.type, src: await readImage(f, 900), ts:now()}); }
+      save(); render(); notify(tab.slice(0,-1)+' added', 'Shared to your Moments', 'grid', {tab:'moments'});
+    }catch(e){ notify('Not added', e.message, 'x'); }
+  });
+  const tiles = [];
+  mine.forEach(m=>{
+    const src = m.src || session.momentBlobs[m.id];
+    const t = h('button',{class:'tile', style:'height:'+(tall?'200px':'112px'), 'aria-label':'Open your '+cfg.type, onclick:()=>{ V.overlay='viewer'; V.viewer=m; render(); }});
+    if (src && (m.type==='photo'||m.type==='gif')) t.appendChild(h('img',{src, alt:''}));
+    else if (src) t.appendChild(h('video',{src, muted:true, playsinline:true, preload:'metadata'}));
+    else t.appendChild(sil());
+    if (m.type==='video'||m.type==='reel') t.appendChild(h('span',{class:'play'}, ic('play',14,true)));
+    if (m.type==='gif') t.appendChild(h('span',{class:'gif'}, 'GIF'));
+    t.appendChild(h('span',{class:'meta'}, 'You · '+ago(m.ts)));
+    tiles.push(t);
+  });
+  const demoCount = Math.max(0, (tall?6:9) - mine.length);
+  for (let i=0;i<demoCount;i++){
+    const p = PEOPLE[i % PEOPLE.length];
+    const t = h('div',{class:'tile', style:'height:'+(tall?'200px':'112px')+';'+(i%3===1?'background:#2A0005':i%3===2?'background:#7A000C':'')}, sil());
+    if (cfg.type==='video'||cfg.type==='reel') t.appendChild(h('span',{class:'play'}, ic('play',14,true)));
+    if (cfg.type==='gif') t.appendChild(h('span',{class:'gif'}, 'GIF'));
+    t.appendChild(h('span',{class:'meta'}, p.name + (tall? ' · '+(2+i*3)+'.1k views':'')));
+    tiles.push(t);
+  }
+  return h('div',{class:'scroll'},
+    header('Moments', 'Photos, videos, reels and GIFs', h('button',{class:'icon-btn white', 'aria-label':'Add '+tab.toLowerCase(), onclick:add}, ic('plus',20))),
+    h('div',{class:'seg glass', style:'grid-template-columns:repeat(4,1fr);margin-bottom:14px', role:'tablist'}, Object.keys(MTYPES).map(k=>h('button',{class:k===tab?'on':'', role:'tab', 'aria-selected':k===tab?'true':'false', onclick:()=>{V.mediaTab=k; render();}}, k))),
+    mine.length? null : h('button',{class:'btn btn-ghost', style:'margin-bottom:14px', onclick:add}, ic('plus',18), 'Add your first '+(tab==='GIFs'?'GIF':tab.slice(0,-1).toLowerCase())),
+    h('div',{class:'mgrid', style:tall?'grid-template-columns:repeat(2,minmax(0,1fr))':''}, tiles));
+}
+function Viewer(){
+  const m = V.viewer; const src = m.src || session.momentBlobs[m.id];
+  let media;
+  if (!src) media = h('div',{class:'sub', style:'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;padding:40px;text-align:center'}, 'Videos play during the visit they were added. Add it again to watch.');
+  else if (m.type==='photo'||m.type==='gif') media = h('img',{src, alt:'', style:'position:absolute;inset:0;width:100%;height:100%;object-fit:contain'});
+  else media = h('video',{src, controls:true, autoplay:true, playsinline:true, loop:m.type==='reel', style:'position:absolute;inset:0;width:100%;height:100%;object-fit:'+(m.type==='reel'?'cover':'contain')});
+  return h('div',{class:'overlay dark'}, media,
+    h('div',{class:'row between', style:'position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:14px;right:14px'},
+      h('span',{class:'tag'}, m.type.toUpperCase()),
+      h('div',{class:'row'},
+        h('button',{class:'icon-btn', 'aria-label':'Remove from Moments', onclick:()=>{ S.moments=S.moments.filter(x=>x.id!==m.id); save(); V.overlay=null; render(); }}, ic('trash',18)),
+        h('button',{class:'icon-btn', 'aria-label':'Close', onclick:()=>{ V.overlay=null; render(); }}, ic('x',18)))));
+}
+
+/* ---------- Plans: next hour + 24h watch ---------- */
+function Plans(){
+  const {s,e} = V.sel; const d = ((e-s)+24)%24 || 24;
+  const C = 2*Math.PI*108;
+  const inRange = hr => ((hr - s + 24) % 24) <= d;
+  const nh = S.nextHour && now()-S.nextHour.ts < 3600000 ? S.nextHour : null;
+  const nhInput = h('input',{placeholder:'What are you doing in the next hour?', 'aria-label':'Next hour', maxlength:'80', style:'flex:1;min-width:0;border:0;outline:none;background:transparent;color:#fff;font-size:15px'});
+  const postNH = ()=>{ const t=nhInput.value.trim(); if(!t) return; S.nextHour={text:t, ts:now()}; save(); render(); notify('Next hour shared', t, 'clock', {tab:'plans'}); };
+  nhInput.addEventListener('keydown', ev=>{ if(ev.key==='Enter') postNH(); });
+  const dial = h('div',{class:'dial'});
+  const svg = document.createElement('span');
+  svg.innerHTML = '<svg width="280" height="280" viewBox="0 0 280 280" style="position:absolute;inset:0" aria-hidden="true">'+
+    '<circle cx="140" cy="140" r="134" fill="none" stroke="rgba(255,255,255,.9)" stroke-width="2"/>'+
+    '<circle cx="140" cy="140" r="108" fill="none" stroke="rgba(255,255,255,.1)" stroke-width="20"/>'+
+    '<circle cx="140" cy="140" r="108" fill="none" stroke="#A3000F" stroke-width="20" stroke-linecap="round" stroke-dasharray="'+(d/24*C)+' '+C+'" transform="rotate('+(-90+s*15)+' 140 140)" style="transition:stroke-dasharray .3s"/></svg>';
+  dial.appendChild(svg.firstChild);
+  for (let hr=0; hr<24; hr++){
+    const a = hr/24*2*Math.PI - Math.PI/2;
+    const isEnd = hr===s || hr===(e%24);
+    dial.appendChild(h('button',{class:'hr'+(inRange(hr)?' in':'')+(isEnd?' end':''), style:'left:'+(140+Math.cos(a)*108)+'px;top:'+(140+Math.sin(a)*108)+'px', 'aria-label':'Set '+(V.pick==='start'?'start':'end')+' to '+hh(hr), onclick:()=>{
+      if (V.pick==='start'){ V.sel={s:hr, e:(hr+2)%24}; V.pick='end'; }
+      else { if (hr===V.sel.s) return; V.sel={s:V.sel.s, e:hr}; V.pick='start'; }
+      render();
+    }}, pad(hr)));
+  }
+  dial.appendChild(h('div',{class:'center'}, h('div',{class:'serif', style:'font-size:25px'}, hh(s)+' – '+hh(e)), h('div',{style:'font-size:12px;color:#D0D0D0'}, d+(d===1?' hour':' hours')), h('div',{style:'font-size:10.5px;color:#FFB3BA;font-weight:700'}, V.pick==='start'?'Tap a start hour':'Now tap the end hour')));
+  const note = h('input',{class:'field', placeholder:'Add a note (optional)', 'aria-label':'Plan note', maxlength:'60', value:V.planNote});
+  note.addEventListener('input', ()=>{ V.planNote = note.value; });
+  const active = S.plans.filter(p=>now()-p.ts < DAY);
+  return h('div',{class:'scroll'},
+    header('My plans', 'Any time, any length, within the next 24 hours'),
+    h('div',{class:'glass', style:'padding:12px 14px;border-radius:22px;display:flex;flex-direction:column;gap:6px'},
+      h('span',{style:'font-size:11.5px;font-weight:800;color:#FFB3BA'}, 'Next hour'),
+      nh ? h('div',{class:'row between'}, h('span',{style:'font-size:15px;font-weight:700'}, nh.text), h('button',{class:'chip', onclick:()=>{ S.nextHour=null; save(); render(); }}, 'Change'))
+         : h('div',{class:'row'}, nhInput, h('button',{class:'icon-btn white', style:'width:38px;height:38px', 'aria-label':'Share next hour', onclick:postNH}, ic('send',16))),
+      nh ? h('span',{style:'font-size:11.5px;color:#bbb'}, 'Visible for '+Math.max(1,60-Math.round((now()-nh.ts)/60000))+' more minutes') : null),
+    dial,
+    h('div',{class:'row', style:'gap:8px;flex-wrap:wrap;margin:14px 0 10px;justify-content:center'}, ['Dinner','Drinks','Beach','Gym','Movie','Live music'].map(x=>h('button',{class:'chip'+(V.act===x?' on':''), 'aria-pressed':V.act===x?'true':'false', onclick:()=>{V.act=x; render();}}, x))),
+    note,
+    h('button',{class:'btn btn-white', style:'margin-top:12px', onclick:()=>{
+      S.plans.unshift({id:now(), s, e, act:V.act, note:V.planNote.trim(), ts:now()}); V.planNote=''; save(); render();
+      notify('Plan shared', V.act+' '+hh(s)+'–'+hh(e), 'clock', {tab:'plans'});
+    }}, 'Share my plan'),
+    active.length? h('div',{class:'label-sm', style:'margin-top:20px'}, 'Your plans') : null,
+    active.map(p=>h('div',{class:'list-row'}, h('div',{class:'av', style:'background:#fff;color:#050505'}, ic('clock',20)),
+      h('div',{style:'flex:1;min-width:0'}, h('div',{style:'font-weight:800;font-size:14px'}, p.act+' · '+hh(p.s)+'–'+hh(p.e)), h('div',{style:'font-size:12.5px;color:#C8C8C8'}, p.note || ('Shared '+ago(p.ts)+' ago'))),
+      h('button',{class:'chip', 'aria-label':'Remove plan', onclick:()=>{ S.plans=S.plans.filter(x=>x.id!==p.id); save(); render(); }}, 'Remove'))),
+    h('div',{class:'label-sm', style:'margin-top:20px'}, 'Plans near you'),
+    PEOPLE.map(p=>h('button',{class:'list-row', onclick:()=>{ V.overlay='chat'; V.chatId=p.id; render(); }}, personPic(p),
+      h('div',{style:'flex:1;min-width:0'}, h('div',{style:'font-weight:800;font-size:14px'}, p.name+' · '+p.plan.act), h('div',{style:'font-size:12.5px;color:#C8C8C8'}, hh(p.plan.s)+'–'+hh(p.plan.e)+' · '+p.km+' km')),
+      h('span',{class:'chip', style:'display:flex;align-items:center'}, 'Ask avatar'))));
+}
+
+/* ---------- Chats list ---------- */
+function Chats(){
+  const ids = Array.from(new Set([...S.matches, ...Object.keys(S.chats).filter(k=>S.chats[k].length)]));
+  return h('div',{class:'scroll'},
+    header('Chats', S.matches.length? S.matches.length+' matches' : 'Like someone on Discover to match'),
+    S.matches.length? h('div',{class:'stories', style:'margin-bottom:10px'}, S.matches.map(id=>{ const p=byId(id); return h('button',{class:'story', onclick:()=>{V.overlay='chat'; V.chatId=id; render();}}, h('div',{class:'ring'}, h('div',{class:'in'}, sil())), h('span',null,p.name), h('small',null,'match')); })) : null,
+    ids.length? ids.map(id=>{ const p=byId(id); const m=(S.chats[id]||[]).slice(-1)[0];
+      return h('button',{class:'list-row', onclick:()=>{V.overlay='chat'; V.chatId=id; render();}}, personPic(p),
+        h('div',{style:'flex:1;min-width:0'}, h('div',{class:'row', style:'gap:6px;font-weight:800;font-size:15px'}, p.name, h('span',{class:'tag', style:'height:18px;font-size:9.5px'}, 'AI AVATAR'), modeOf(id)!=='keep'? h('span',{style:'display:inline-flex;color:#FFB3BA', title:MODES[modeOf(id)]}, ic('timer',14)) : null, hiddenFrom(id)? h('span',{style:'display:inline-flex;color:#bbb', title:'You appear offline to '+p.name}, ic('eyeoff',14)) : null),
+          h('div',{style:'font-size:13px;color:#C8C8C8;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'}, m? (m.gone ? 'Viewed once · gone' : (m.once && m.from!=='me' && !m.opened) ? 'New view-once message' : (m.from==='me'?'You: ':'')+m.text) : (modeOf(id)==='after' && S.matches.includes(id) ? 'Chat cleared after viewing' : 'Say hello'))),
+        h('span',{style:'font-size:12px;color:#A8A8A8'}, m? ago(m.ts):'')); })
+    : h('div',{class:'glass', style:'border-radius:24px;padding:24px;text-align:center;display:flex;flex-direction:column;gap:12px;align-items:center'},
+        h('div',{class:'serif', style:'font-size:28px'}, 'No chats yet'), h('p',{class:'sub'}, 'Swipe right on Discover, or tap the chat button on a profile to talk to their AI avatar.'),
+        h('button',{class:'chip on', onclick:()=>{V.tab='discover'; render();}}, 'Go to Discover')));
+}
+
+/* ---------- Me: avatar + who talks to the real you ---------- */
+function Me(){
+  const seg = (key, opts) => h('div',{class:'seg light', style:'grid-template-columns:repeat(2,1fr)'}, opts.map(([v,l])=>h('button',{class:S.settings[key]===v?'on':'', 'aria-pressed':S.settings[key]===v?'true':'false', onclick:()=>{ S.settings[key]=v; save(); render(); notify('Setting saved', (key==='strangers'?'Strangers':'Matches')+' now talk to '+(v==='me'?'you':'your AI avatar'), 'spark'); }}, l)));
+  return h('div',{class:'scroll'},
+    header(S.me.name, S.me.age+' · AI avatar active'+(S.vanish.all?' · Vanish mode on':'')),
+    h('div',{class:'row', style:'gap:14px;margin-bottom:14px'},
+      h('div',{style:'position:relative;width:84px;height:84px'}, h('div',{style:'position:absolute;inset:0;border-radius:50%;border:2px dashed rgba(255,255,255,.6);animation:spin 14s linear infinite'}), h('div',{style:'position:absolute;inset:6px'}, avatarImg(72))),
+      h('div',{class:'col', style:'gap:6px;flex:1'}, h('div',{class:'serif', style:'font-size:28px;line-height:1'}, 'My AI avatar'), h('div',{style:'font-size:12.5px;color:#D0D0D0'}, 'Created '+ago(S.avatar.createdAt)+' ago'+(S.avatar.voice?' · with voice':'')),
+        h('button',{class:'chip', style:'align-self:flex-start', onclick:()=>{ V.editAvatar=true; render(); }}, 'Update avatar'))),
+    h('div',{class:'label-sm'}, 'My photos'),
+    h('div',{style:'display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:16px'},
+      (S.me.photos||[]).map((src,i)=>h('div',{class:'tile', style:'height:120px'}, h('img',{src, alt:'Profile photo '+(i+1)}), i===0? h('span',{class:'meta'},'Main') : null)),
+      (S.me.photos||[]).length < 6 ? h('button',{class:'tile', style:'height:120px;background:rgba(255,255,255,.06);border:1.5px dashed rgba(255,255,255,.5)', 'aria-label':'Add a profile photo', onclick:()=>{
+        pickFile('image/*', null, async f=>{ try{ S.me.photos = (S.me.photos||[]).concat([await readImage(f, 900)]); save(); render(); notify('Photo added', 'Your profile now has '+S.me.photos.length+' photo'+(S.me.photos.length>1?'s':''), 'camera', {tab:'me'}); }catch(e){ notify('Couldn’t add that photo', e.message, 'x'); } });
+      }}, h('span',{style:'display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:800'}, ic('plus',22), 'Add photo')) : null),
+    h('div',{class:'silver', style:'border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:12px'},
+      h('div',{style:'font-size:16px;font-weight:800'}, 'Who talks to the real you?'),
+      h('div',{style:'font-size:12.5px;color:#5A4446;margin-top:-6px'}, 'Change this any time. Everyone else talks to your AI avatar.'),
+      h('div',{style:'font-size:12px;font-weight:800;color:#333'}, 'Strangers'), seg('strangers',[['avatar','AI avatar only'],['me','Me']]),
+      h('div',{style:'font-size:12px;font-weight:800;color:#333'}, 'Matches'), seg('matches',[['avatar','AI avatar'],['me','Me']])),
+    h('div',{class:'label-sm', style:'margin-top:18px'}, 'Talking to your avatar now'),
+    STRANGERS.map(p=>{ const on = !!S.allowed[p.id] || S.settings.strangers==='me';
+      return h('div',{class:'list-row'}, h('div',{class:'av', style:'background:#7A000C'}, p.name[0]),
+        h('div',{style:'flex:1'}, h('div',{style:'font-weight:800;font-size:14px'}, p.name+', '+p.age), h('div',{style:'font-size:12.5px;color:#C8C8C8'}, on?'Can talk to the real you':'Talking to your AI avatar')),
+        S.settings.strangers==='me' ? h('span',{style:'font-size:12px;color:#bbb'}, 'All strangers allowed')
+        : h('button',{class:'chip'+(on?'':' on'), onclick:()=>{ S.allowed[p.id]=!on; save(); render(); notify(on? p.name+' is back with your avatar' : p.name+' can now talk to you', on?'You can change this any time':'Your avatar has stepped aside', 'spark'); }}, on?'Back to avatar':'Let them talk to me')); }),
+    h('div',{class:'label-sm', style:'margin-top:18px'}, 'Privacy'),
+    h('div',{class:'silver', style:'border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:12px'},
+      h('button',{class:'row between', role:'switch', 'aria-checked':S.vanish.all?'true':'false', style:'width:100%;padding:0;border:0;background:transparent;color:#050505;font-family:inherit;text-align:left', onclick:()=>{ S.vanish.all=!S.vanish.all; save(); render(); notify(S.vanish.all?'Vanish mode on':'Vanish mode off', S.vanish.all?'Nobody can see when you’re online':'People can see when you’re online', 'eyeoff'); }},
+        h('span',{style:'display:flex;flex-direction:column;gap:2px'}, h('span',{style:'font-size:16px;font-weight:800'}, 'Vanish mode'), h('span',{style:'font-size:12.5px;color:#5A4446'}, 'Nobody can see when you’re online')), sw(S.vanish.all)),
+      h('div',{style:'font-size:12px;font-weight:800;color:#333'}, S.vanish.all ? 'Hidden from everyone' : 'Or hide only from these people'),
+      h('div',{class:'row', style:'gap:8px;flex-wrap:wrap'}, [...PEOPLE, ...STRANGERS].map(q=>{ const on=hiddenFrom(q.id); return h('button',{class:'chip', disabled:S.vanish.all, 'aria-pressed':on?'true':'false', style:'color:'+(on?'#fff':'#050505')+';background:'+(on?'#050505':'transparent')+';border-color:'+(on?'#050505':'#999')+(S.vanish.all?';opacity:.6':''), onclick:()=>{ toggleHide(q.id); render(); }}, on? '✓ '+q.name : q.name); })),
+      h('div',{style:'font-size:12px;font-weight:800;color:#333;margin-top:4px'}, 'Messages for new chats'),
+      h('div',{class:'seg light', style:'grid-template-columns:repeat(2,1fr)'}, Object.keys(MODES).map(k=>h('button',{class:S.defaultMode===k?'on':'', 'aria-pressed':S.defaultMode===k?'true':'false', style:'font-size:12px', onclick:()=>{ S.defaultMode=k; save(); render(); notify('Default updated', MODES[k]+' for chats without their own setting', 'timer'); }}, MODES[k]))),
+      h('div',{style:'font-size:12px;font-weight:800;color:#333;margin-top:4px'}, 'Messages by person'),
+      PEOPLE.map(q=>{ const sel = h('select',{'aria-label':'Message setting for '+q.name, style:'height:36px;border-radius:18px;border:1px solid #999;background:#fff;color:#050505;padding:0 10px;font-family:inherit;font-size:12.5px;font-weight:700', onchange:e=>{ S.chatModes[q.id]=e.target.value; save(); render(); notify('Chat with '+q.name+' updated', MODES[e.target.value], 'timer'); }}, Object.keys(MODES).map(k=>h('option',{value:k, selected:modeOf(q.id)===k}, MODES[k])));
+        return h('div',{class:'row between'}, h('span',{style:'font-size:14px;font-weight:700;color:#050505'}, q.name), sel); })),
+    h('div',{class:'label-sm', style:'margin-top:18px'}, 'Your activity'),
+    h('div',{style:'display:grid;grid-template-columns:repeat(3,1fr);gap:8px'},
+      [['Matches',S.matches.length],['Moments',S.moments.length],['Plans',S.plans.filter(p=>now()-p.ts<DAY).length]].map(([l,n])=>h('div',{class:'glass', style:'border-radius:18px;padding:12px;text-align:center'}, h('div',{style:'font-size:20px;font-weight:800'}, String(n)), h('div',{style:'font-size:11.5px;color:#C8C8C8'}, l)))),
+    h('button',{class:'btn btn-ghost', style:'margin-top:20px', onclick:()=>{ if (confirm('Erase everything on this device and start the demo again?')){ try{localStorage.removeItem(KEY);}catch(e){} S=DEFAULT(); V.tab='discover'; V.overlay=null; render(); } }}, 'Start the demo again'));
+}
+
+/* ---------- Notifications ---------- */
+function Notes(){
+  const iconFor = k => ICONS[k] ? k : 'bell';
+  const tabs=['All','Matches','Chats','Plans'];
+  const filt = {All:()=>true, Matches:n=>n.kind==='heart', Chats:n=>n.kind==='chat', Plans:n=>n.kind==='clock'}[V.noteTab||'All'];
+  const list = S.notes.filter(filt);
+  return h('div',{class:'overlay'}, h('div',{class:'scroll', style:'padding-bottom:40px'},
+    h('div',{class:'row between', style:'margin-bottom:14px'},
+      h('div',{class:'row'}, h('button',{class:'icon-btn', 'aria-label':'Back', onclick:()=>{ V.overlay=null; render(); }}, ic('back',20)), h('h1',{class:'serif', style:'font-size:36px'}, 'Notifications')),
+      h('button',{class:'chip', onclick:()=>{ S.notes.forEach(n=>n.read=true); save(); render(); }}, 'Mark all read')),
+    h('div',{class:'row', style:'gap:8px;margin-bottom:6px;overflow-x:auto'}, tabs.map(t=>h('button',{class:'chip'+((V.noteTab||'All')===t?' on':''), onclick:()=>{ V.noteTab=t; render(); }}, t))),
+    list.length ? list.map(n=>h('button',{class:'list-row', style:n.read?'opacity:.7':'', onclick:()=>{ n.read=true; save(); if(n.go) openGo(n.go); else render(); }},
+      h('div',{class:'av', style:n.kind==='heart'?'background:var(--red)':'background:rgba(255,255,255,.12)'}, ic(iconFor(n.kind),20, n.kind==='heart')),
+      h('div',{style:'flex:1;min-width:0'}, h('div',{style:'font-size:14px;font-weight:800'}, n.title), h('div',{style:'font-size:12.5px;color:#C8C8C8;line-height:1.35'}, n.sub)),
+      h('div',{class:'col', style:'align-items:flex-end;gap:6px'}, h('span',{style:'font-size:12px;color:#A8A8A8'}, ago(n.ts)), n.read? null : h('span',{style:'width:8px;height:8px;border-radius:4px;background:#FF3B3B'}))))
+    : h('p',{class:'sub', style:'margin-top:20px'}, 'Nothing here yet.')));
+}
+
+/* ---------- render ---------- */
+function render(){
+  const keepScroll = $app.querySelector('.scroll'); const st = keepScroll ? keepScroll.scrollTop : 0; const sameTab = render._tab === V.tab+'|'+V.overlay;
+  $app.textContent = '';
+  if (!S.me){ $app.appendChild(V.overlay==='signup' ? Signup() : Welcome()); return; }
+  if (!S.avatar.created || V.editAvatar){ $app.appendChild(AvatarCreate()); return; }
+  const main = {discover:Discover, moments:Moments, plans:Plans, chats:Chats, me:Me}[V.tab]();
+  $app.appendChild(main); $app.appendChild(nav());
+  if (sameTab){ const sc=$app.querySelector('.scroll'); if(sc) sc.scrollTop = st; }
+  render._tab = V.tab+'|'+V.overlay;
+  const ov = {chat:Chat, match:Match, notes:Notes, flash:FlashView, viewer:Viewer}[V.overlay];
+  if (ov) $app.appendChild(ov());
+}
+render();
+
+/* gentle demo activity: someone shares a plan, a stranger messages your avatar */
+setTimeout(()=>{ if (S.avatar.created) notify('Sarah shared a plan', 'Live music · 21:00–00:00 tonight', 'clock', {tab:'plans'}); }, 9000);
+setTimeout(()=>{ if (S.avatar.created && S.settings.strangers==='avatar') notify('Kai is chatting with your avatar', 'Let him talk to you from the Me tab', 'spark', {tab:'me'}); }, 22000);
+})();
+</script>
+</body>
+</html>
