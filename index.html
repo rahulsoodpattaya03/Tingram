@@ -301,6 +301,23 @@ body.light .onb .tile[style*="dashed"]{background:rgba(255,255,255,.14) !importa
 body.light .onb .btn-white{background:#A3000F;color:#fff;box-shadow:0 12px 28px rgba(163,0,15,.45)}
 body.light .onb .btn[disabled]{opacity:.55}
 body.light .onb [style*="#050505 30%"], body.light .onb [style*="#fff 30%"]{background:linear-gradient(180deg,rgba(29,26,29,0),rgba(29,26,29,.35) 40%) !important}
+
+/* 2D character box with moving lips + captions */
+.char2d{height:90%;max-width:94%}
+.char2d img{display:block;width:100%;height:100%;object-fit:contain;pointer-events:none}
+.mouth{position:absolute;transform:translate(-50%,-50%) scaleY(.08);aspect-ratio:1.6/1;border-radius:45% 45% 50% 50%/40% 40% 60% 60%;background:radial-gradient(ellipse at 50% 35%,#2a0608 0%,#5c1418 55%,#b3525a 100%);box-shadow:0 0 0 1px rgba(150,60,60,.35);opacity:0;transition:opacity .12s}
+.char2d-wrap[data-talk] .mouth{opacity:1;animation:lips .17s ease-in-out infinite alternate}
+@keyframes lips{0%{transform:translate(-50%,-50%) scaleY(.18)}55%{transform:translate(-50%,-50%) scaleY(.75)}100%{transform:translate(-50%,-50%) scaleY(1)}}
+.char2d-wrap[data-talk] .char2d{animation:c2talk .45s ease-in-out infinite}
+@keyframes c2talk{0%,100%{transform:translateY(0)}50%{transform:translateY(-.6%)}}
+.caption{position:absolute;z-index:3;left:6%;right:6%;bottom:2%;padding:9px 13px;border-radius:16px;background:rgba(255,255,255,.94);color:#050505;font-size:13.5px;font-weight:700;line-height:1.35;text-align:center;box-shadow:0 8px 22px rgba(0,0,0,.15);opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .2s;pointer-events:none}
+.caption.on{opacity:1;transform:none}
+.talkdots{display:none}
+
+.feed-card{border-radius:26px;overflow:hidden;background:rgba(255,255,255,.7);box-shadow:0 12px 30px rgba(31,38,60,.12)}
+.feed-photo{position:relative;height:230px;overflow:hidden;background-size:cover;background-position:center}
+.feed-shade{position:absolute;left:0;right:0;bottom:0;height:60%;background:linear-gradient(180deg,rgba(0,0,0,0),rgba(0,0,0,.75))}
+body:not(.light) .feed-card{background:rgba(255,255,255,.06)}
 @media (prefers-reduced-motion: reduce){*{animation:none!important;transition:none!important}}
 </style>
 </head>
@@ -343,6 +360,7 @@ const ICONS = {
   timer:'<circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/>', eyeoff:'<path d="M3 3l18 18M10.6 6.1A10 10 0 0 1 12 6c6 0 10 6 10 6a17 17 0 0 1-3.2 3.8M6.6 6.6A17 17 0 0 0 2 12s4 7 10 7a9.6 9.6 0 0 0 4.2-1"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>',
   bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>', gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v9h14v-9M12 8C10 4 6 5 7.5 7.5 8.5 8 12 8 12 8zM12 8c2-4 6-3 4.5-.5C15.5 8 12 8 12 8z"/>', coin:'<circle cx="12" cy="12" r="9"/><path d="M12 7v10M9.5 9.5c0-1 1-1.6 2.5-1.6s2.5.7 2.5 1.7-1 1.4-2.5 1.6-2.5.8-2.5 1.8 1 1.7 2.5 1.7 2.5-.6 2.5-1.6"/>', locate:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3"/><circle cx="12" cy="12" r="7"/>',
   cal:'<rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/>', crown:'<path d="M3 8l4.5 4L12 5l4.5 7L21 8l-2 11H5z"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/>', doc:'<path d="M6 3h9l4 4v14H6z"/><path d="M14 3v5h5M9 13h7M9 17h7"/>', help:'<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.3-1 .9-1 1.7M12 17h.01"/>',
   video:'<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/>', trash:'<path d="M5 7h14M10 7V5h4v2M7 7l1 13h8l1-13"/>'
 };
 function ic(name, size, fill){
@@ -539,8 +557,8 @@ function nav(){
 function brandHeader(){
   return h('div',{class:'row between', style:'margin-bottom:12px;align-items:center'},
     h('div',{class:'row', style:'gap:10px;min-width:0'},
-      h('img',{src:LOGO_SM, alt:'Tingram logo', style:'width:62px;height:58px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(255,255,255,.28)) drop-shadow(0 4px 10px rgba(0,0,0,.5))'}),
-      h('div',{style:'min-width:0'}, h('h1',{class:'serif', style:'font-size:40px'}, 'Tingram'), myCity() ? h('p',{class:'sub', style:'font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'}, 'Near '+myCity()) : null)),
+      h('img',{src:LOGO_SM, alt:'Tingram logo', onclick:logoTap, style:'width:62px;height:58px;object-fit:contain;filter:drop-shadow(0 0 10px rgba(255,255,255,.28)) drop-shadow(0 4px 10px rgba(0,0,0,.5))'}),
+      h('div',{style:'min-width:0'}, h('h1',{class:'serif', style:'font-size:40px'}, 'Tingram'), myCity() ? h('p',{class:'sub', style:'font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis'}, 'Within '+radius()+' km · '+myCity()) : h('p',{class:'sub', style:'font-size:12px'}, 'Location off')) ),
     h('div',{class:'row'}, h('button',{class:'icon-btn', 'aria-label':'Tingram Mall', onclick:()=>{ V.overlay='mall'; render(); }}, ic('bag',20)), bellBtn()));
 }
 function header(title, sub, right){
@@ -562,6 +580,7 @@ function Welcome(){
       h('h1',{class:'serif', style:'font-size:46px'}, 'Meet someone worth the night out.'),
       h('p',{class:'sub'}, 'Real people only. Strangers meet your AI avatar first — you decide who gets to talk to the real you.'),
       h('button',{class:'btn btn-white', onclick:()=>{V.overlay='signup'; render();}}, 'Create account'),
+      h('button',{style:'background:none;border:0;color:inherit;text-decoration:underline;font-size:12.5px;font-family:inherit;opacity:.85', onclick:()=>{ V.showTerms=true; render(); }}, 'Terms & Privacy'),
       h('p',{class:'sub', style:'text-align:center;font-size:12px'}, 'Demo app: your data stays on this device.')));
 }
 function Signup(){
@@ -592,12 +611,16 @@ function Signup(){
     h('button',{class:'btn btn-ghost', style:'height:66px;border-radius:33px;font-size:16px', onclick:()=>{ keepFields(); V.locMsg='Finding you…'; render(); getLocation(loc=>{ V.signupLoc=loc; V.locMsg=null; render(); }, msg=>{ V.locMsg=msg; render(); }); }},
       ic('locate',20), V.signupLoc ? (V.signupLoc.city || 'Location found') : 'Use my real location'),
     V.locMsg ? h('p',{class:'sub', role:'status', style:'font-size:12.5px;color:#FFB3BA'}, V.locMsg) : h('p',{class:'sub', style:'font-size:12px'}, 'Others only see your city and distance — never your exact spot.'),
+    h('label',{class:'row', style:'gap:10px;align-items:flex-start;font-size:13.5px;line-height:1.4;cursor:pointer'},
+      (()=>{ const cb=h('input',{type:'checkbox', checked:!!V.agree, style:'width:22px;height:22px;accent-color:#A3000F;flex-shrink:0;margin-top:1px'}); cb.addEventListener('change',()=>{ V.agree=cb.checked; keepFields(); }); return cb; })(),
+      h('span',null, 'I am 18 or older and I agree to the ', h('button',{style:'background:none;border:0;padding:0;color:inherit;font-weight:800;text-decoration:underline;font-family:inherit;font-size:inherit', onclick:e=>{ e.preventDefault(); keepFields(); V.showTerms=true; render(); }}, 'Terms & Privacy'))),
     err,
     h('button',{class:'btn btn-white', onclick:()=>{
       const n = name.value.trim(); const a = parseInt(age.value,10);
+      if (!V.agree) { err.textContent='Please accept the Terms to continue.'; return; }
       if (!n) { err.textContent='Enter your first name.'; return; }
       if (!(a>=18 && a<=99)) { err.textContent='Tingram is for adults 18 and over.'; return; }
-      S.me = {name:n, age:a, photos:(V.signupPhotos||[]).slice(0,6), loc:V.signupLoc||null}; V.overlay=null; save(); render();
+      S.me = {name:n, age:a, photos:(V.signupPhotos||[]).slice(0,6), loc:V.signupLoc||null, termsAt:now()}; V.overlay=null; save(); render();
     }}, 'Continue'));
 }
 function AvatarCreate(){
@@ -650,7 +673,17 @@ function AvatarCreate(){
 }
 
 /* ---------- Discover ---------- */
-function deck(){ return PEOPLE.filter(p=>!S.liked.includes(p.id) && !S.passed.includes(p.id)); }
+const MAX_KM = 10;
+function radius(){ return Math.min(MAX_KM, Math.max(1, S.radius || MAX_KM)); }
+function nearby(){ const out = (S.banned||[]).concat(S.blocked||[]); return (S.me && S.me.loc) ? PEOPLE.filter(p=>p.km <= radius() && !out.includes(p.id)) : []; }
+function deck(){ return nearby().filter(p=>!S.liked.includes(p.id) && !S.passed.includes(p.id)); }
+function needLocationCard(){
+  return h('div',{class:'deck glass', style:'border-radius:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px;text-align:center'},
+    ic('locate',40), h('div',{class:'serif', style:'font-size:30px'}, 'Turn on your location'),
+    h('p',{class:'sub'}, 'Tingram only shows people within '+MAX_KM+' km of you — and only shows you to people within '+MAX_KM+' km.'),
+    V.locMsg ? h('p',{class:'sub', style:'color:#A3000F'}, V.locMsg) : null,
+    h('button',{class:'btn btn-white', style:'max-width:260px', onclick:()=>{ V.locMsg='Finding you…'; render(); getLocation(loc=>{ S.me.loc=loc; V.locMsg=null; save(); render(); notify('Location on', 'Showing people within '+radius()+' km of '+loc.city, 'pin'); }, msg=>{ V.locMsg=msg; render(); }); }}, ic('locate',18), 'Use my location'));
+}
 function decide(p, liked){
   if (liked){ S.liked.push(p.id); if (p.likesYou){ if(!S.matches.includes(p.id)) S.matches.push(p.id); save(); V.overlay='match'; V.chatId=p.id; render(); notify('New match with '+p.name, 'Her AI avatar is ready to chat', 'heart', {chat:p.id}); return; } }
   else S.passed.push(p.id);
@@ -663,12 +696,13 @@ function Discover(){
     h('button',{class:'story', onclick:()=>{ if(myFlash){ V.overlay='flash'; V.chatId='me'; render(); } else postFlash(); }},
       h('div',{class:'ring'+(myFlash?'':' seen')}, h('div',{class:'in'}, myFlash ? (myFlash.type==='image' ? h('img',{src:myFlash.src, alt:''}) : sil()) : h('span',{style:'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:#fff;color:#050505'}, ic('plus',22)))),
       h('span',null,'Your flash'), h('small',null, myFlash? left(myFlash.ts)+' left':'post')),
-    PEOPLE.map(q=>h('button',{class:'story', onclick:()=>{ S.seenFlash[q.id]=true; save(); V.overlay='flash'; V.chatId=q.id; render(); }},
+    nearby().map(q=>h('button',{class:'story', onclick:()=>{ S.seenFlash[q.id]=true; save(); V.overlay='flash'; V.chatId=q.id; render(); }},
       h('div',{class:'ring'+(S.seenFlash[q.id]?' seen':'')}, h('div',{class:'in'}, sil(), photoEl(q))), h('span',null,q.name), h('small',null,q.flashH+'h left'))));
   let deckEl;
-  if (!p){
+  if (!(S.me && S.me.loc)){ deckEl = needLocationCard(); }
+  else if (!p){
     deckEl = h('div',{class:'deck glass', style:'border-radius:32px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:30px;text-align:center'},
-      h('div',{class:'serif', style:'font-size:30px'}, 'You’ve seen everyone nearby'),
+      h('div',{class:'serif', style:'font-size:30px'}, 'You’ve seen everyone within '+radius()+' km'),
       h('p',{class:'sub'}, 'Check back later, or start over to see the same people again.'),
       h('button',{class:'chip on', onclick:()=>{ S.passed=[]; S.liked=S.liked.filter(id=>S.matches.includes(id)); save(); render(); }}, 'Start over'));
   } else {
@@ -696,7 +730,8 @@ function Discover(){
     p? h('div',{class:'actions'},
       h('button',{class:'round', style:'width:60px;height:60px', 'aria-label':'Pass', onclick:()=>{ const c=document.querySelector('.card:not(.back)'); fling(c,-1,()=>decide(p,false)); }}, ic('x',24)),
       h('button',{class:'round', style:'width:76px;height:76px;background:var(--red);border:0', 'aria-label':'Like', onclick:()=>{ const c=document.querySelector('.card:not(.back)'); fling(c,1,()=>decide(p,true)); }}, ic('heart',30,true)),
-      h('button',{class:'round', style:'width:60px;height:60px', 'aria-label':'Chat with AI avatar', onclick:()=>{ V.overlay='chat'; V.chatId=p.id; render(); }}, ic('chat',22))) : null);
+      h('button',{class:'round', style:'width:60px;height:60px', 'aria-label':'Chat with AI avatar', onclick:()=>{ V.overlay='chat'; V.chatId=p.id; render(); }}, ic('chat',22))) : null,
+    quickOptions(), happening());
 }
 function fling(card, dir, done){
   if (!card){ done(); return; }
@@ -831,7 +866,8 @@ function ChatSheet(p){
       h('div',{style:'font-size:12.5px;font-weight:800;color:#333;margin-top:8px'}, 'Vanish mode'),
       h('button',{class:'row between', role:'switch', 'aria-checked':hid?'true':'false', disabled:S.vanish.all, style:'width:100%;padding:12px 14px;border-radius:18px;border:0;background:rgba(0,0,0,.06);color:#050505;font-family:inherit;text-align:left', onclick:()=>{ toggleHide(p.id); render(); }},
         h('span',{style:'display:flex;flex-direction:column;gap:2px'}, h('span',{style:'font-size:14px;font-weight:800'}, 'Hide my online status from '+p.name), h('span',{style:'font-size:12px;opacity:.75'}, S.vanish.all ? 'Vanish mode is on for everyone (change it in Me)' : 'They won’t see when you’re online')),
-        sw(hid))));
+        sw(hid)),
+      h('button',{class:'btn', style:'margin-top:12px;background:#050505;color:#fff', onclick:()=>{ S.reports=(S.reports||[]).concat([{id:'r'+now(), who:p.id, reason:'Reported from chat', ts:now(), status:'open'}]); S.blocked=(S.blocked||[]).concat([p.id]); V.sheet=null; V.overlay=null; save(); render(); notify(p.name+' reported & blocked', 'Our team will review it. You won’t see '+p.name+' again.', 'shield'); }}, ic('shield',18), 'Report & block '+p.name)));
 }
 function sw(on){ return h('span',{'aria-hidden':'true', style:'width:48px;height:28px;border-radius:14px;flex-shrink:0;position:relative;transition:background .2s;background:'+(on?'#A3000F':'#BDBDBD')}, h('span',{style:'position:absolute;top:3px;left:'+(on?'23px':'3px')+';width:22px;height:22px;border-radius:11px;background:#fff;transition:left .2s'})); }
 function toggleHide(id){ const i=S.vanish.hideFrom.indexOf(id); if(i>=0) S.vanish.hideFrom.splice(i,1); else S.vanish.hideFrom.push(id); save(); const name=(byId(id)||STRANGERS.find(x=>x.id===id)||{name:'them'}).name; notify(i>=0 ? name+' can see you online again' : 'Hidden from '+name, i>=0 ? 'Vanish mode off for '+name : 'You appear offline to '+name, 'eyeoff'); }
@@ -939,7 +975,7 @@ function Plans(){
       h('div',{style:'flex:1;min-width:0'}, h('div',{style:'font-weight:800;font-size:14px'}, p.act+' · '+hh(p.s)+'–'+hh(p.e)), h('div',{style:'font-size:12.5px;color:#C8C8C8'}, p.note || ('Shared '+ago(p.ts)+' ago'))),
       h('button',{class:'chip', 'aria-label':'Remove plan', onclick:()=>{ S.plans=S.plans.filter(x=>x.id!==p.id); save(); render(); }}, 'Remove'))),
     h('div',{class:'label-sm', style:'margin-top:20px'}, 'Plans near you'),
-    PEOPLE.map(p=>h('button',{class:'list-row', onclick:()=>{ V.overlay='chat'; V.chatId=p.id; render(); }}, personPic(p),
+    nearby().map(p=>h('button',{class:'list-row', onclick:()=>{ V.overlay='chat'; V.chatId=p.id; render(); }}, personPic(p),
       h('div',{style:'flex:1;min-width:0'}, h('div',{style:'font-weight:800;font-size:14px'}, p.name+' · '+p.plan.act), h('div',{style:'font-size:12.5px;color:#C8C8C8'}, hh(p.plan.s)+'–'+hh(p.plan.e)+' · '+p.km+' km')),
       h('span',{class:'chip', style:'display:flex;align-items:center'}, 'Ask avatar'))));
 }
@@ -995,6 +1031,12 @@ function Me(){
         h('div',{style:'flex:1'}, h('div',{style:'font-weight:800;font-size:14px'}, p.name+', '+p.age), h('div',{style:'font-size:12.5px;color:#C8C8C8'}, on?'Can talk to the real you':'Talking to your AI avatar')),
         S.settings.strangers==='me' ? h('span',{style:'font-size:12px;color:#bbb'}, 'All strangers allowed')
         : h('button',{class:'chip'+(on?'':' on'), onclick:()=>{ S.allowed[p.id]=!on; save(); render(); notify(on? p.name+' is back with your avatar' : p.name+' can now talk to you', on?'You can change this any time':'Your avatar has stepped aside', 'spark'); }}, on?'Back to avatar':'Let them talk to me')); }),
+    h('div',{class:'label-sm', style:'margin-top:4px'}, 'Distance'),
+    (()=>{ const r = radius(); const lab = h('span',{style:'font-weight:900'}, r+' km');
+      const sl = h('input',{type:'range', min:'1', max:String(MAX_KM), step:'1', value:String(r), 'aria-label':'Show people within', style:'width:100%;accent-color:#A3000F'});
+      sl.addEventListener('input', ()=>{ lab.textContent = sl.value+' km'; });
+      sl.addEventListener('change', ()=>{ S.radius = Number(sl.value); save(); render(); notify('Distance updated', 'Showing people within '+S.radius+' km', 'pin'); });
+      return h('div',{class:'glass', style:'border-radius:20px;padding:12px 14px;margin-bottom:14px'}, h('div',{class:'row between', style:'font-size:13.5px;font-weight:700;margin-bottom:6px'}, h('span',null,'Show people within'), lab), sl, h('div',{style:'font-size:11.5px;color:#C8C8C8;margin-top:4px'}, 'Maximum '+MAX_KM+' km. You’re only visible to people within '+MAX_KM+' km of you.')); })(),
     h('div',{class:'label-sm', style:'margin-top:4px'}, 'Appearance'),
     h('div',{class:'row', style:'gap:8px;margin-bottom:6px'}, [['light','White'],['dark','Dark red']].map(([k,l])=>h('button',{class:'chip'+((S.theme||'light')===k?' on':''), 'aria-pressed':(S.theme||'light')===k?'true':'false', onclick:()=>{ S.theme=k; save(); render(); }}, l))),
     h('div',{class:'label-sm', style:'margin-top:18px'}, 'Privacy'),
@@ -1011,6 +1053,8 @@ function Me(){
     h('div',{class:'label-sm', style:'margin-top:18px'}, 'Your activity'),
     h('div',{style:'display:grid;grid-template-columns:repeat(3,1fr);gap:8px'},
       [['Matches',S.matches.length],['Moments',S.moments.length],['Plans',S.plans.filter(p=>now()-p.ts<DAY).length]].map(([l,n])=>h('div',{class:'glass', style:'border-radius:18px;padding:12px;text-align:center'}, h('div',{style:'font-size:20px;font-weight:800'}, String(n)), h('div',{style:'font-size:11.5px;color:#C8C8C8'}, l)))),
+    h('button',{class:'btn btn-ghost', style:'margin-top:20px', onclick:()=>{ V.showTerms=true; render(); }}, ic('doc',18), 'Terms & Privacy'),
+    S.adminPin ? h('button',{class:'btn btn-ghost', style:'margin-top:10px', onclick:()=>{ V.admin='pin'; V.adminErr=null; render(); }}, ic('shield',18), 'Admin') : null,
     h('button',{class:'btn btn-ghost', style:'margin-top:20px', onclick:()=>{ if (confirm('Erase everything on this device and start the demo again?')){ try{localStorage.removeItem(KEY);}catch(e){} S=DEFAULT(); V.tab='discover'; V.overlay=null; render(); } }}, 'Start the demo again'));
 }
 
@@ -1357,7 +1401,7 @@ const myCity = () => (S.me && S.me.loc && S.me.loc.city) || '';
 /* ---------- voice + lip-sync ---------- */
 function speak(text){
   const clean = String(text||'').replace(/\[action:[a-z]+\]/gi,'').trim(); if (!clean) return;
-  A3.talk(Math.min(14, 0.9 + clean.split(/\s+/).length*0.32)); talk2D(Math.min(14, 0.9 + clean.split(/\s+/).length*0.32));
+  const est = Math.min(14, 0.9 + clean.split(/\s+/).length*0.32); A3.talk(est); talk2D(est); caption2D(clean, est);
   if (S.voiceOn && 'speechSynthesis' in window){
     try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(clean); u.rate = 1.02; u.pitch = 1.05;
       u.onstart = ()=>{ const sec=Math.min(20, 0.9 + clean.split(/\s+/).length*0.36); A3.talk(sec); talk2D(sec); }; u.onend = ()=>{ A3.talk(0); talk2D(0); }; speechSynthesis.speak(u); } catch(e){}
@@ -1367,10 +1411,10 @@ const ACTIONS = ['wave','jump','run','dance','spin','sit','bow','clap','flex','r
 const ACT_WORDS = {wave:/\b(wave|hello|hi there)\b/i, jump:/\bjump/i, run:/\brun/i, dance:/\bdanc/i, spin:/\b(spin|turn around)\b/i, sit:/\bsit/i, bow:/\bbow\b/i, clap:/\bclap/i, flex:/\b(flex|muscle)/i, ride:/\b(ride|drive)\b/i};
 function detectAction(text){ for (const k in ACT_WORDS){ if (ACT_WORDS[k].test(text)) return k; } return null; }
 function actionBar(){
-  const list = ['wave','jump','run','dance','spin','sit','bow','clap','flex'].concat(!is2D() && (A3.hasRide() || (S.avatar.look && S.avatar.look.ride)) ? ['ride'] : []).concat(['talk']);
+  const list = (is2D() ? ['jump'] : ['wave','jump','run','dance','spin','sit','bow','clap','flex']).concat(!is2D() && (A3.hasRide() || (S.avatar.look && S.avatar.look.ride)) ? ['ride'] : []).concat(['talk']);
   const nice = {wave:'Wave', jump:'Jump', run:'Run', dance:'Dance', spin:'Spin', sit:'Sit', bow:'Bow', clap:'Clap', flex:'Flex', ride:A3.isRiding()?'Get off':'Ride', talk:'Talk'};
   return h('div',{class:'row', style:'gap:8px;overflow-x:auto;padding:2px 0 6px;scrollbar-width:none', 'aria-label':'Avatar actions'},
-    list.map(k=>h('button',{class:'chip', style:'flex-shrink:0', onclick:()=>{ if (k==='talk') speak(randomLine()); else doAct(k); if (k==='ride') setTimeout(render, 30); }}, nice[k])));
+    list.map(k=>h('button',{class:'chip', style:'flex-shrink:0', onclick:()=>{ if (k==='talk'){ const line = randomLine(); if (V.overlay==='buddy'){ S.buddy.push({from:'av', text:line, ts:now()}); save(); render(); } setTimeout(()=>speak(line), 60); } else doAct(k); if (k==='ride') setTimeout(render, 30); }}, nice[k])));
 }
 function avName(){ return (S.avatar && S.avatar.name) || 'Nova'; }
 function randomLine(){ const n=S.me?S.me.name:''; const L=['Hey '+n+'! Ready to meet someone amazing today?', 'I’ve got your back, '+n+'. Want me to check who’s nearby?', 'Your plans look fun. Should I share them with your matches?', 'Tell me about your day — I’m all ears.']; return L[Math.floor(Math.random()*L.length)]; }
@@ -1625,19 +1669,29 @@ function Motion(){
       h('p',{class:'sub', style:'font-size:12px;margin-top:10px'}, 'These moves are real motion capture from Mixamo. When your own adult Tingram characters are rigged in Mixamo, the same moves play on them.')));
 }
 /* ---------- Tingram 2D characters ---------- */
+const MOUTH = {woman:{x:50.2, y:16.6, w:5.6, ar:'481/1050'}, man:{x:49.9, y:14.8, w:6.2, ar:'495/1050'}};
 const is2D = () => !!(S.avatar && (S.avatar.base==='man' || S.avatar.base==='woman'));
 function avatarSlot(){
-  if (is2D()) return h('div',{class:'char2d-wrap', 'data-char2d':'1'}, h('img',{class:'char2d', src:CHARS[S.avatar.base], alt:'Your Tingram character'}), h('span',{class:'talkdots', 'aria-hidden':'true'}, '• • •'));
+  if (is2D()){ const M = MOUTH[S.avatar.base];
+    return h('div',{class:'char2d-wrap', 'data-char2d':'1'},
+      h('div',{class:'char2d', style:'aspect-ratio:'+M.ar}, h('img',{src:CHARS[S.avatar.base], alt:'Your Tingram character'}),
+        h('span',{class:'mouth', 'aria-hidden':'true', style:'left:'+M.x+'%;top:'+M.y+'%;width:'+M.w+'%'})),
+      h('div',{class:'caption', 'aria-live':'polite'})); }
   return h('div',{'data-avatar3d':'1', style:'position:absolute;inset:0'});
 }
 let act2dTimer = 0, talk2dTimer = 0;
 function curChar(){ const all=document.querySelectorAll('[data-char2d]'); return all[all.length-1]; }
 function doAct(k){
+  if (is2D() && k!=='talk' && k!=='jump') k = 'jump';
   if (!is2D()){ if (k==='wave') A3.wave(); else A3.act(k); return; }
   const el = curChar(); if (!el) return;
   if (k==='talk'){ talk2D(2.5); return; }
   el.removeAttribute('data-act'); void el.offsetWidth; el.setAttribute('data-act', k);
   clearTimeout(act2dTimer); act2dTimer = setTimeout(()=>{ const e=curChar(); if (e) e.removeAttribute('data-act'); }, ({jump:2.4, run:3.6, dance:4.5, spin:1.3, sit:3.5, bow:1.7, clap:2.5, flex:2.1, wave:2.1}[k]||2.5)*1000);
+}
+function caption2D(text, sec){
+  const el = curChar(); if (!el) return; const c = el.querySelector('.caption'); if (!c) return;
+  c.textContent = text; c.classList.add('on'); clearTimeout(caption2D.t); caption2D.t = setTimeout(()=>{ const e=curChar(); const cc=e&&e.querySelector('.caption'); if (cc) cc.classList.remove('on'); }, Math.max(2500, sec*1000+600));
 }
 function talk2D(sec){
   const el = curChar(); if (!el) return;
@@ -1744,11 +1798,12 @@ function CalendarTab(){
   Object.keys(c.items).filter(k=>k>=tk).sort().forEach(k=>c.items[k].slice().sort((a,b)=>(a.start||'').localeCompare(b.start||'')).forEach(it=>upcoming.push([k,it])));
   const vis = {me:'Only me', friends:'Friends', public:'Public'};
   return h('div',{class:'scroll'},
-    header('Calendar', 'Visible to: '+vis[c.vis], h('button',{class:'icon-btn'+(S.premium?' white':''), 'aria-label':S.premium?'Premium active':'Get Premium', onclick:()=>{ V.sheet='premium'; render(); }}, ic('crown',20))),
+    header('Calendar', 'Visible to: '+vis[c.vis], h('div',{class:'row'}, h('button',{class:'icon-btn', 'aria-label':'How the calendar works', onclick:()=>{ V.sheet='calhelp'; render(); }}, ic('help',20)), h('button',{class:'icon-btn'+(S.premium?' white':''), 'aria-label':S.premium?'Premium active':'Get Premium', onclick:()=>{ V.sheet='premium'; render(); }}, ic('crown',20)))),
     h('div',{class:'glass', style:'padding:12px 14px;border-radius:22px;display:flex;flex-direction:column;gap:6px;margin-bottom:14px'},
       h('span',{style:'font-size:11.5px;font-weight:800;color:#FFB3BA'}, 'Next hour'),
       nh ? h('div',{class:'row between'}, h('span',{style:'font-size:15px;font-weight:700'}, nh.text), h('button',{class:'chip', onclick:()=>{ S.nextHour=null; save(); render(); }}, 'Change'))
          : h('div',{class:'row'}, nhInput, h('button',{class:'icon-btn white', style:'width:38px;height:38px', 'aria-label':'Share next hour', onclick:postNH}, ic('send',16)))),
+    !S.calHelpSeen ? h('div',{class:'glass row', style:'border-radius:20px;padding:12px 14px;margin-bottom:14px;gap:10px;align-items:flex-start'}, ic('help',20), h('div',{style:'flex:1;font-size:13px;line-height:1.45'}, h('b',null,'New here? '), 'Tap any date to plan a date, appointment or Tingram Live, or add old photos and videos as memories.'), h('button',{class:'chip', onclick:()=>{ S.calHelpSeen=true; V.sheet='calhelp'; save(); render(); }}, 'Guide')) : null,
     h('div',{class:'calcard cal-'+theme, 'data-mid': (S.premium && wall==='photo' && c.wallPhoto) ? c.wallPhoto : null, style:'background:'+(WALLS[wall]||WALLS.classic).bg+';background-size:cover;background-position:center'},
       h('div',{class:'veil'}),
       h('div',{class:'row between', style:'position:relative;margin-bottom:10px'},
@@ -1770,7 +1825,7 @@ function CalendarTab(){
         it.kind==='live' ? h('span',{class:'tag'}, 'LIVE') : null))
       : h('p',{class:'sub'}, 'Tap any date to plan a date, appointment or Tingram Live — or add old photos and videos as memories.'),
     h('div',{class:'label-sm', style:'margin-top:20px'}, 'Plans near you'),
-    PEOPLE.map(p=>h('button',{class:'list-row', onclick:()=>{ V.overlay='chat'; V.chatId=p.id; render(); }}, personPic(p),
+    nearby().map(p=>h('button',{class:'list-row', onclick:()=>{ V.overlay='chat'; V.chatId=p.id; render(); }}, personPic(p),
       h('div',{style:'flex:1;min-width:0'}, h('div',{style:'font-weight:800;font-size:14px'}, p.name+' · '+p.plan.act), h('div',{style:'font-size:12.5px;color:#C8C8C8'}, hh(p.plan.s)+'–'+hh(p.plan.e)+' · '+p.km+' km')),
       h('span',{class:'chip', style:'display:flex;align-items:center'}, 'Ask avatar'))));
 }
@@ -1858,7 +1913,7 @@ function PremiumSheet(){
       : h('button',{class:'btn', style:'margin-top:14px;background:#A3000F;color:#fff', onclick:()=>{ S.premium=true; save(); close(); notify('Premium unlocked', 'Demo Premium — real payments come with the backend', 'crown', {tab:'plans'}); }}, ic('crown',18), 'Try Premium free (demo)'),
     h('p',{style:'font-size:11.5px;color:#5A4446;margin:10px 0 0'}, 'This demo has no payments. Real Premium billing will be added with the backend.')], close);
 }
-function CalSheet(){ return {day:DaySheet, calstyle:StyleSheet, premium:PremiumSheet}[V.sheet] ? {day:DaySheet, calstyle:StyleSheet, premium:PremiumSheet}[V.sheet]() : null; }
+function CalSheet(){ const m={day:DaySheet, calstyle:StyleSheet, premium:PremiumSheet, calhelp:CalHelp}; return m[V.sheet] ? m[V.sheet]() : null; }
 function MemView(){
   const {k, m} = V.mem; const c = cal();
   return h('div',{class:'overlay dark'},
@@ -1871,9 +1926,159 @@ function MemView(){
         h('button',{class:'icon-btn', 'aria-label':'Close', onclick:()=>{ V.overlay=null; render(); }}, ic('x',18)))),
     m.caption ? h('div',{style:'position:absolute;left:16px;right:16px;bottom:calc(26px + env(safe-area-inset-bottom,0px));font-size:15px;font-weight:700;text-shadow:0 2px 8px rgba(0,0,0,.7)'}, m.caption) : null);
 }
+/* ---------- Terms & Conditions ---------- */
+const TERMS = [
+  ['1. Who can use Tingram', 'You must be at least 18 years old. You must give your real age and use only photos and videos of yourself. One account per person.'],
+  ['2. Your AI avatar', 'Every member creates an AI avatar. Strangers talk to your avatar until you choose to let them talk to you. Avatar replies are made by AI and are always labelled as AI. Never present your avatar or AI replies as a real person speaking.'],
+  ['3. Location (10 km)', 'Tingram uses your location only to show you people within 10 km and to show you to people within 10 km. Others see your city and an approximate distance — never your exact location.'],
+  ['4. Calendar, Flash and Memories', 'You choose who can see your calendar (Only me, Friends or Public). Flashes must be original, taken with your camera, and disappear after 24 hours. Memories you add stay on your device until you remove them.'],
+  ['5. Messages and Vanish mode', 'You can choose Keep, View once, Delete after viewing or Delete after 24 hours for each chat, and hide your online status. Others can still take screenshots or photos of their screen, so only share what you are comfortable with.'],
+  ['6. What is not allowed', 'No nudity or sexual content, no harassment, hate, threats or violence, no scams, selling, escort or paid-dating offers, no fake profiles or impersonation, no content involving anyone under 18, and nothing illegal. Breaking these rules can lead to removal of content, suspension or a permanent ban, and we may report illegal activity to the authorities.'],
+  ['7. Safety', 'Meet in public places, tell a friend where you are going, and never send money to someone you met online. Use Report & block in any chat if something feels wrong.'],
+  ['8. Premium, coins and the Mall', 'Premium unlocks extra calendar wallpapers and themes. Coins and Mall items are for use inside Tingram only, have no cash value and cannot be exchanged for money. Prices and items may change.'],
+  ['9. How Tingram staff can access your data', 'To keep members safe and follow the law, authorised Tingram staff can see account details, profile content, reports and any content reported to us, and may review other content when needed to investigate a report, enforce these Terms or meet a legal request. We do not sell your personal data.'],
+  ['10. Your rights', 'You can ask to see, correct or delete your personal data, and you can delete your account at any time. Contact us at the address below.'],
+  ['11. Changes and contact', 'We may update these Terms and will tell you about important changes in the app. Questions: support@tingram.app (replace with your real contact).']
+];
+function TermsView(){
+  return h('div',{class:'overlay', style:'z-index:70'}, h('div',{class:'scroll', style:'padding-bottom:40px'},
+    h('div',{class:'row', style:'margin-bottom:12px'}, h('button',{class:'icon-btn', 'aria-label':'Close', onclick:()=>{ V.showTerms=false; render(); }}, ic('back',20)), h('h1',{class:'serif', style:'font-size:34px'}, 'Terms & Privacy')),
+    h('p',{class:'sub', style:'margin-bottom:10px'}, 'Last updated '+new Date().toLocaleDateString(undefined,{day:'numeric', month:'long', year:'numeric'})+'. By using Tingram you agree to these Terms.'),
+    TERMS.map(([t,b])=>h('div',{class:'glass', style:'border-radius:20px;padding:14px 16px;margin-bottom:10px'}, h('div',{style:'font-weight:800;font-size:15px;margin-bottom:6px'}, t), h('div',{style:'font-size:13.5px;line-height:1.5'}, b))),
+    S.me && S.me.termsAt ? h('p',{class:'sub', style:'text-align:center;margin-top:8px'}, 'You accepted these Terms on '+new Date(S.me.termsAt).toLocaleDateString()) : null));
+}
+
+/* ---------- Discover: quick options + happening near you ---------- */
+function quickOptions(){
+  const T = (icon, label, fn) => h('button',{class:'glass', style:'border-radius:20px;padding:12px 6px;display:flex;flex-direction:column;align-items:center;gap:6px;font-weight:800;font-size:12px;color:inherit;font-family:inherit', onclick:fn}, h('span',{style:'width:40px;height:40px;border-radius:20px;background:#A3000F;color:#fff;display:flex;align-items:center;justify-content:center'}, ic(icon,20)), label);
+  return h('div',{style:'margin-top:22px'},
+    h('div',{class:'label-sm', style:'margin-bottom:8px'}, 'Quick options'),
+    h('div',{style:'display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px'},
+      T('cal','Calendar', ()=>{ V.tab='plans'; render(); }),
+      T('camera','Post flash', ()=>postFlash()),
+      T('bag','Mall', ()=>{ V.overlay='mall'; render(); }),
+      T('chat','Talk to '+avName(), ()=>{ V.overlay='buddy'; render(); }),
+      T('grid','Moments', ()=>{ V.tab='moments'; render(); }),
+      T('heart','Matches', ()=>{ V.tab='chats'; render(); })));
+}
+function happening(){
+  if (!(S.me && S.me.loc)) return null;
+  const cards = [];
+  nearby().forEach((p,i)=>{
+    const tone = ['var(--photo)','linear-gradient(160deg,#2A0005,#7A000C)','linear-gradient(160deg,#6f8790,#2b2f35)'][i%3];
+    cards.push(h('div',{class:'feed-card'},
+      h('div',{class:'feed-photo', style:'background:'+tone}, sil(), h('div',{class:'initial serif', style:'font-size:110px'}, p.name[0]), photoEl(p),
+        h('span',{class:'tag', style:'position:absolute;top:12px;left:12px'}, ic('cal',12), 'On '+p.name+'’s calendar'),
+        h('div',{class:'feed-shade'}),
+        h('div',{style:'position:absolute;left:14px;right:14px;bottom:12px;color:#fff'},
+          h('div',{class:'serif', style:'font-size:26px;line-height:1.05'}, p.name+' is going for '+p.plan.act.toLowerCase()),
+          h('div',{style:'font-size:12.5px;opacity:.9;margin-top:4px'}, 'Today '+hh(p.plan.s)+'–'+hh(p.plan.e)+' · '+p.km+' km away'))),
+      h('div',{class:'row', style:'gap:8px;padding:10px 12px'},
+        h('button',{class:'chip on', style:'flex:1', onclick:()=>{ V.overlay='chat'; V.chatId=p.id; render(); }}, 'Ask '+p.name+'’s avatar'),
+        h('button',{class:'chip', style:'flex:1', onclick:()=>{ const k=todayKey(); const c=cal(); (c.items[k]=c.items[k]||[]).push({id:'e'+now(), kind:'plan', title:p.plan.act+' (like '+p.name+')', start:pad(p.plan.s%24)+':00', end:pad(p.plan.e%24)+':00', remind:60, with:p.id, photo:null, fired:false}); save(); notify('Added to your calendar', p.plan.act+' today '+hh(p.plan.s), 'cal', {tab:'plans'}); }}, '+ My calendar'))));
+  });
+  const c = cal(); const tk = todayKey();
+  Object.keys(c.mem).sort().reverse().slice(0,4).forEach(k=>{ const m = c.mem[k].find(x=>x.type==='image'); if (!m) return;
+    cards.push(h('div',{class:'feed-card'}, h('div',{class:'feed-photo', 'data-mid':m.id, style:'background:#ddd center/cover'},
+      h('span',{class:'tag', style:'position:absolute;top:12px;left:12px'}, ic('camera',12), 'Your memory'), h('div',{class:'feed-shade'}),
+      h('div',{style:'position:absolute;left:14px;right:14px;bottom:12px;color:#fff'}, h('div',{class:'serif', style:'font-size:24px'}, m.caption || 'A memory'), h('div',{style:'font-size:12.5px;opacity:.9'}, parseKey(k).toDateString()+' · visible to '+({me:'only you', friends:'friends', public:'everyone'})[c.vis]))))); });
+  if (!cards.length) return null;
+  return h('div',{style:'margin-top:22px'},
+    h('div',{class:'row between', style:'margin-bottom:8px'}, h('div',{class:'label-sm'}, 'Happening near you'), h('button',{class:'chip', style:'height:30px', onclick:()=>{ V.tab='plans'; render(); }}, 'Open calendar')),
+    h('div',{class:'col', style:'gap:14px'}, cards));
+}
+
+/* ---------- Calendar guide ---------- */
+const CAL_HELP = [
+  ['clock','Next hour','Write what you’re doing in the next 60 minutes. Nearby people see it for one hour, then it disappears.'],
+  ['cal','Tap any date','Opens that day. Future days start on “Plans & dates”, past days on “Memories”.'],
+  ['heart','Plans & dates','Add a Date, Appointment, Plan or Tingram Live with start and end time, who it’s with, a reminder and a photo.'],
+  ['video','Tingram Live','Schedule a live session. It shows with a pulsing red dot on the calendar so friends know when to join.'],
+  ['bell','Reminders','Pop up inside Tingram before your plan starts. Tap the calendar button on a saved plan to add it to your phone’s own calendar for alarms.'],
+  ['camera','Memories','Add old photos and videos to any day, with a caption. Days with a photo show it right on the calendar. They stay on your phone.'],
+  ['eye','Who can see','Only me, Friends or Public — controls who can see your calendar and plans.'],
+  ['star','Wallpaper & Theme (Premium)','Change the calendar background — 7 wallpapers or your own photo — and the look: Classic, Glass, Dark or Neon red.'],
+  ['spark','Font','Pick one of 6 fonts for the month name and dates. Free for everyone.'],
+  ['pin','Coming up & Plans near you','Your next plans in date order, and what people within 10 km are doing today — ask their avatar or copy a plan into your calendar.']
+];
+function CalHelp(){
+  return sheetWrap('How the calendar works', CAL_HELP.map(([i,t,b])=>h('div',{class:'row', style:'align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid rgba(0,0,0,.07)'},
+    h('span',{style:'width:36px;height:36px;border-radius:18px;background:#A3000F;color:#fff;display:flex;align-items:center;justify-content:center;flex-shrink:0'}, ic(i,18)),
+    h('div',null, h('div',{style:'font-weight:800;font-size:14.5px;color:#050505'}, t), h('div',{style:'font-size:13px;color:#5A4446;line-height:1.45;margin-top:2px'}, b)))), ()=>{ V.sheet=null; render(); });
+}
+
+/* ---------- Admin ---------- */
+let logoTaps = [];
+function logoTap(){ logoTaps = logoTaps.filter(t=>now()-t < 2500); logoTaps.push(now()); if (logoTaps.length >= 5){ logoTaps = []; V.admin = 'pin'; V.adminErr = null; render(); } }
+async function sha(t){ try { const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('tingram:'+t)); return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join(''); } catch(e){ return 'p'+t; } }
+function AdminPin(){
+  const setting = !S.adminPin;
+  const a = h('input',{class:'field big', type:'password', inputmode:'numeric', maxlength:'8', placeholder: setting ? 'New PIN (4–8 digits)' : 'Admin PIN', 'aria-label':'Admin PIN', style:'text-align:center;letter-spacing:.3em'});
+  const b = setting ? h('input',{class:'field big', type:'password', inputmode:'numeric', maxlength:'8', placeholder:'Repeat PIN', 'aria-label':'Repeat PIN', style:'text-align:center;letter-spacing:.3em'}) : null;
+  const go = async ()=>{
+    const v = a.value.trim();
+    if (!/^\d{4,8}$/.test(v)){ V.adminErr = 'Use 4 to 8 numbers.'; render(); return; }
+    if (setting){ if (b.value.trim() !== v){ V.adminErr = 'The two PINs don’t match.'; render(); return; } S.adminPin = await sha(v); save(); V.admin='panel'; render(); return; }
+    if (await sha(v) === S.adminPin){ V.admin='panel'; V.adminTab='Overview'; render(); } else { V.adminErr = 'Wrong PIN.'; render(); }
+  };
+  return h('div',{class:'overlay', style:'z-index:80'}, h('div',{class:'scroll', style:'display:flex;flex-direction:column;gap:14px;padding-top:28px'},
+    h('button',{class:'icon-btn', 'aria-label':'Close', onclick:()=>{ V.admin=null; render(); }}, ic('x',20)),
+    h('div',{style:'width:64px;height:64px;border-radius:32px;background:#050505;color:#fff;display:flex;align-items:center;justify-content:center;margin-top:10px'}, ic('shield',30)),
+    h('h1',{class:'serif', style:'font-size:38px'}, setting ? 'Create admin PIN' : 'Admin access'),
+    h('p',{class:'sub'}, setting ? 'Only you should know this PIN. You’ll open Admin by tapping the Tingram logo 5 times.' : 'Enter your admin PIN.'),
+    a, b, V.adminErr ? h('p',{role:'alert', style:'color:#A3000F;font-weight:800;margin:0'}, V.adminErr) : null,
+    h('button',{class:'btn btn-white', onclick:go}, setting ? 'Save PIN & open Admin' : 'Open Admin')));
+}
+function AdminPanel(){
+  const tab = V.adminTab || 'Overview'; const c = cal();
+  const stat = (n,l) => h('div',{class:'glass', style:'border-radius:18px;padding:12px;text-align:center'}, h('div',{style:'font-size:22px;font-weight:900'}, String(n)), h('div',{style:'font-size:11.5px;color:#C8C8C8'}, l));
+  const evCount = Object.values(c.items).reduce((a,x)=>a+x.length,0), memCount = Object.values(c.mem).reduce((a,x)=>a+x.length,0);
+  const msgCount = Object.values(S.chats).reduce((a,x)=>a+x.length,0);
+  const reports = S.reports || [], banned = S.banned || [];
+  const allPeople = PEOPLE.concat(STRANGERS.map(x=>Object.assign({km:'?', bio:'Talking to your avatar', tags:[], plan:null}, x)));
+  const tabs = {
+    Overview:()=>[
+      h('div',{style:'display:grid;grid-template-columns:repeat(3,1fr);gap:8px'}, stat(allPeople.length+1,'Users'), stat(reports.filter(r=>r.status==='open').length,'Open reports'), stat(banned.length,'Banned'), stat(S.matches.length,'Matches'), stat(msgCount,'Messages'), stat(evCount,'Calendar plans'), stat(memCount,'Memories'), stat(S.moments.length,'Moments'), stat(S.gifts.length,'Gifts sent')),
+      h('div',{class:'glass', style:'border-radius:18px;padding:12px 14px;margin-top:12px;font-size:13px;line-height:1.5'}, h('b',null,'Owner account: '), S.me.name+', '+S.me.age+' · '+(myCity()||'no location')+' · '+(S.premium?'Premium':'Free')+' · '+S.coins+' coins · calendar visible to '+c.vis)],
+    Users:()=>allPeople.map(p=>{ const isB = banned.includes(p.id); return h('div',{class:'list-row'}, personPic(p),
+      h('div',{style:'flex:1;min-width:0'}, h('div',{style:'font-weight:800;font-size:14px'}, p.name+', '+p.age+(p.demo?' · demo':'')+(isB?' · BANNED':'')), h('div',{style:'font-size:12px;color:#C8C8C8'}, (p.km!=='?'?p.km+' km · ':'')+(p.plan?p.plan.act+' '+hh(p.plan.s)+'–'+hh(p.plan.e)+' · ':'')+((S.chats[p.id]||[]).length)+' msgs')),
+      h('button',{class:'chip'+(isB?'':' on'), onclick:()=>{ S.banned = isB ? banned.filter(x=>x!==p.id) : banned.concat([p.id]); save(); render(); }}, isB?'Unban':'Ban')); }),
+    Reports:()=> reports.length ? reports.slice().reverse().map(r=>{ const p = byId(r.who) || STRANGERS.find(x=>x.id===r.who) || {name:r.who};
+      return h('div',{class:'glass', style:'border-radius:18px;padding:12px 14px;margin-bottom:8px'},
+        h('div',{class:'row between'}, h('b',null, p.name), h('span',{class:'tag', style:r.status==='open'?'':'background:#5E5E5E'}, r.status.toUpperCase())),
+        h('div',{style:'font-size:13px;margin:6px 0'}, r.reason+' · '+new Date(r.ts).toLocaleString()),
+        (S.chats[r.who]||[]).length ? h('div',{style:'font-size:12px;color:#C8C8C8;margin-bottom:6px'}, 'Last reported message: “'+(S.chats[r.who].filter(m=>m.text).slice(-1)[0]||{text:'—'}).text+'”') : null,
+        h('div',{class:'row', style:'gap:8px'},
+          h('button',{class:'chip on', onclick:()=>{ r.status='resolved'; if(!banned.includes(r.who)) S.banned = banned.concat([r.who]); save(); render(); }}, 'Ban & close'),
+          h('button',{class:'chip', onclick:()=>{ r.status='resolved'; save(); render(); }}, 'Dismiss'))); }) : h('p',{class:'sub'}, 'No reports yet. Members report people from the chat settings (⏱ button → Report & block).'),
+    Calendars:()=>{ const keys = Array.from(new Set(Object.keys(c.items).concat(Object.keys(c.mem)))).sort().reverse();
+      return keys.length ? keys.map(k=>h('div',{class:'list-row', style:'align-items:flex-start'}, h('div',{class:'av', style:'background:#050505;color:#fff;font-size:12px'}, String(parseKey(k).getDate())),
+        h('div',{style:'flex:1;min-width:0'}, h('div',{style:'font-weight:800;font-size:14px'}, parseKey(k).toDateString()),
+          (c.items[k]||[]).map(it=>h('div',{style:'font-size:12.5px'}, '• '+KINDS[it.kind]+': '+it.title+' '+it.start+'–'+it.end+(it.with&&byId(it.with)?' with '+byId(it.with).name:''))),
+          (c.mem[k]||[]).length ? h('div',{style:'font-size:12.5px;color:#C8C8C8'}, (c.mem[k]||[]).length+' memories') : null))) : h('p',{class:'sub'}, 'No calendar entries yet.'); },
+    Chats:()=>{ const ids = Object.keys(S.chats).filter(k=>S.chats[k].length); return ids.length ? ids.map(id=>{ const p = byId(id)||{name:id}; return h('div',{class:'glass', style:'border-radius:18px;padding:12px 14px;margin-bottom:8px'},
+      h('div',{style:'font-weight:800;margin-bottom:6px'}, 'You ↔ '+p.name+'’s avatar · '+MODES[modeOf(id)]),
+      S.chats[id].slice(-6).map(m=>h('div',{style:'font-size:12.5px;line-height:1.4'}, (m.from==='me'?'You: ':'Avatar: ')+(m.gone?'(viewed once, deleted)':m.text)))); }) : h('p',{class:'sub'}, 'No chats yet.'); },
+    Settings:()=>[
+      h('div',{class:'glass', style:'border-radius:18px;padding:12px 14px;font-size:13.5px'}, 'Maximum distance: ', h('b',null, MAX_KM+' km'), ' (locked for all users)'),
+      h('div',{class:'row', style:'gap:8px;flex-wrap:wrap;margin-top:12px'},
+        h('button',{class:'chip on', onclick:()=>{ S.premium=!S.premium; save(); render(); }}, S.premium?'Remove Premium':'Grant Premium'),
+        h('button',{class:'chip', onclick:()=>{ S.coins+=1000; save(); render(); }}, '+1,000 coins'),
+        h('button',{class:'chip', onclick:()=>{ const a=h('a',{href:URL.createObjectURL(new Blob([JSON.stringify(S,null,2)],{type:'application/json'})), download:'tingram-data.json', style:'display:none'}); document.body.appendChild(a); a.click(); setTimeout(()=>a.remove(),500); }}, 'Export data'),
+        h('button',{class:'chip', onclick:()=>{ S.adminPin=null; save(); V.admin='pin'; render(); }}, 'Change PIN'))]
+  };
+  return h('div',{class:'overlay', style:'z-index:80'}, h('div',{class:'scroll', style:'padding-bottom:40px'},
+    h('div',{class:'row between', style:'margin-bottom:8px'},
+      h('div',{class:'row'}, h('span',{style:'width:40px;height:40px;border-radius:20px;background:#050505;color:#fff;display:flex;align-items:center;justify-content:center'}, ic('shield',20)), h('h1',{class:'serif', style:'font-size:34px'}, 'Admin')),
+      h('button',{class:'icon-btn', 'aria-label':'Close admin', onclick:()=>{ V.admin=null; render(); }}, ic('x',20))),
+    h('div',{style:'font-size:12px;line-height:1.45;padding:10px 12px;border-radius:14px;background:#FFF4E5;color:#7A4B00;margin-bottom:12px'}, 'This panel shows what’s stored on this phone. To see every real user across all phones, Tingram needs its backend with a secure admin login on the server — a PIN in the app is not real security.'),
+    h('div',{class:'row', style:'gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none'}, Object.keys(tabs).map(t=>h('button',{class:'chip'+(tab===t?' on':''), style:'flex-shrink:0', onclick:()=>{ V.adminTab=t; render(); }}, t))),
+    tabs[tab]()));
+}
 /* ---------- render ---------- */
 function render(){
   setTimeout(hydrateMedia, 0);
+  setTimeout(()=>{ if (V.showTerms) $app.appendChild(TermsView()); if (V.admin==='pin') $app.appendChild(AdminPin()); else if (V.admin==='panel') $app.appendChild(AdminPanel()); }, 0);
   const light = S.theme !== 'dark'; document.body.classList.toggle('light', light); document.documentElement.classList.toggle('light-html', light);
   renderInner();
   const slots = $app.querySelectorAll('[data-avatar3d]'); const slot = slots[slots.length-1];
