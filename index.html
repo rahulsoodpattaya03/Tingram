@@ -15,7 +15,7 @@
 <body>
   <div class="card">
     <h2>🐶 Tingram Pets</h2>
-    <input type="text" id="petName" placeholder="Pet Name (e.g., Max)">
+    <input type="text" id="petName"<select id="petSpecies"><option value="Dog">Dog</option><option value="Cat">Cat</option></select>placeholder="Pet Name (e.g., Max)">
     <input type="text" id="petBreed" placeholder="Breed (e.g., Golden Retriever)">
     <button id="addPetBtn">Add Pet</button>
   </div>
@@ -52,7 +52,7 @@
     const addBtn = document.getElementById("addPetBtn");
     const list = document.getElementById("petsList");
     const nameInput = document.getElementById("petName");
-    const breedInput = document.getElementById("petBreed");
+    const breedInput =const speciesInput = document.getElementById("petSpecies");document.getElementById("petBreed");
 
     addBtn.addEventListener("click", async () => {
       if (!nameInput.value || !breedInput.value) return alert("Fill all fields!");
@@ -60,7 +60,7 @@
       
       await addDoc(collection(db, "pets"), {
         name: nameInput.value,
-        breed: breedInput.value,
+        breed: breedInput.value,species: speciesInput.value,
         timestamp: new Date()
       });
 
