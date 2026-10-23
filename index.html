@@ -10,6 +10,7 @@
     input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
     button { background: #ff4757; color: white; border: none; font-weight: bold; cursor: pointer; }
     .pet-item { border-bottom: 1px solid #eee; padding: 10px 0; }
+    .listen-btn { background: #2ed573; margin-top: 10px; }
   </style>
 </head>
 <body>
@@ -59,6 +60,15 @@
     const breedInput = document.getElementById("petBreed");
     const speciesInput = document.getElementById("petSpecies");
 
+    // Initialize Web Speech API for listening
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
+    if (SpeechRecognition) {
+      recognition = new SpeechRecognition();
+      recognition.continuous = false;
+      recognition.interimResults = false;
+    }
+
     addBtn.addEventListener("click", async () => {
       if (!nameInput.value || !breedInput.value) return alert("Fill all fields!");
       addBtn.textContent = "Adding...";
@@ -76,13 +86,50 @@
       loadPets();
     });
 
+    // Handle microphone button clicks
+    list.addEventListener("click", (e) => {
+      if (e.target.classList.contains("listen-btn")) {
+        const petName = e.target.dataset.name;
+        
+        if (!recognition) {
+          alert("Microphone not supported on this browser.");
+          return;
+        }
+        
+        e.target.textContent = "🎙️ Listening to you...";
+        e.target.style.background = "#ff4757";
+
+        recognition.start();
+
+        recognition.onresult = (event) => {
+          const transcript = event.results[0][0].transcript;
+          alert(`You said to ${petName}: "${transcript}"\n\n(Next, ElevenLabs will process this and speak back!)`);
+          e.target.textContent = `🎤 Speak to ${petName}`;
+          e.target.style.background = "#2ed573";
+        };
+
+        recognition.onerror = (event) => {
+          alert("Microphone error. Try again.");
+          e.target.textContent = `🎤 Speak to ${petName}`;
+          e.target.style.background = "#2ed573";
+        };
+      }
+    });
+
     async function loadPets() {
       const querySnapshot = await getDocs(collection(db, "pets"));
       list.innerHTML = "";
       querySnapshot.forEach((doc) => {
         const pet = doc.data();
         const icon = pet.species === "Cat" ? "🐱" : "🐶";
-        list.innerHTML += `<div class="pet-item">${icon} <strong>${pet.name}</strong> - ${pet.breed} (${pet.species})</div>`;
+        
+        // Added the new Speak button without removing any existing data display
+        list.innerHTML += `
+          <div class="pet-item">
+            ${icon} <strong>${pet.name}</strong> - ${pet.breed} (${pet.species})
+            <button class="listen-btn" data-name="${pet.name}" data-species="${pet.species}">🎤 Speak to ${pet.name}</button>
+          </div>
+        `;
       });
       if(list.innerHTML === "") list.innerHTML = "No pets added yet.";
     }
