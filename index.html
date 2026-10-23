@@ -7,7 +7,7 @@
   <style>
     body { font-family: sans-serif; background: #f4f4f9; padding: 20px; max-width: 400px; margin: auto; }
     .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    input, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+    input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
     button { background: #ff4757; color: white; border: none; font-weight: bold; cursor: pointer; }
     .pet-item { border-bottom: 1px solid #eee; padding: 10px 0; }
   </style>
@@ -15,8 +15,12 @@
 <body>
   <div class="card">
     <h2>🐶 Tingram Pets</h2>
-    <input type="text" id="petName"<select id="petSpecies"><option value="Dog">Dog</option><option value="Cat">Cat</option></select>placeholder="Pet Name (e.g., Max)">
+    <input type="text" id="petName" placeholder="Pet Name (e.g., Max)">
     <input type="text" id="petBreed" placeholder="Breed (e.g., Golden Retriever)">
+    <select id="petSpecies">
+      <option value="Dog">Dog</option>
+      <option value="Cat">Cat</option>
+    </select>
     <button id="addPetBtn">Add Pet</button>
   </div>
 
@@ -30,15 +34,15 @@
     import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 
-    // ⚠️ REPLACE THIS ENTIRE BLOCK WITH YOUR REAL FIREBASE KEYS:
+    // ⚠️ ONLY PASTE INSIDE THE QUOTES. DO NOT DELETE ANY BRACKETS OR COMMAS.
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
+      apiKey: "AIzaSyCZRdqEhTdTRxM4h6KJS3a6014bhkhUI8A",
       authDomain: "tingram-test-b3213.firebaseapp.com",
       projectId: "tingram-test-b3213",
-      storageBucket: "tingram-test-b3213.appspot.com",
-      messagingSenderId: "YOUR_SENDER_ID",
-      appId: "YOUR_APP_ID",
-      measurementId: "YOUR_MEASUREMENT_ID"
+      storageBucket: "tingram-test-b3213.firebasestorage.app",
+      messagingSenderId: "166205588183",
+      appId: "PASTE_YOUR_APP_ID_HERE",
+      measurementId: "G-32WF9L8973"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -52,7 +56,8 @@
     const addBtn = document.getElementById("addPetBtn");
     const list = document.getElementById("petsList");
     const nameInput = document.getElementById("petName");
-    const breedInput =const speciesInput = document.getElementById("petSpecies");document.getElementById("petBreed");
+    const breedInput = document.getElementById("petBreed");
+    const speciesInput = document.getElementById("petSpecies");
 
     addBtn.addEventListener("click", async () => {
       if (!nameInput.value || !breedInput.value) return alert("Fill all fields!");
@@ -60,7 +65,8 @@
       
       await addDoc(collection(db, "pets"), {
         name: nameInput.value,
-        breed: breedInput.value,species: speciesInput.value,
+        breed: breedInput.value,
+        species: speciesInput.value,
         timestamp: new Date()
       });
 
@@ -75,7 +81,8 @@
       list.innerHTML = "";
       querySnapshot.forEach((doc) => {
         const pet = doc.data();
-        list.innerHTML += `<div class="pet-item">🐾 <strong>${pet.name}</strong> - ${pet.breed}</div>`;
+        const icon = pet.species === "Cat" ? "🐱" : "🐶";
+        list.innerHTML += `<div class="pet-item">${icon} <strong>${pet.name}</strong> - ${pet.breed} (${pet.species})</div>`;
       });
       if(list.innerHTML === "") list.innerHTML = "No pets added yet.";
     }
