@@ -5,28 +5,94 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Tingram - Pet Matchmaking</title>
   <style>
-    body { font-family: sans-serif; background: #f4f4f9; padding: 20px; max-width: 400px; margin: auto; }
+    body { font-family: sans-serif; background: #f4f4f9; padding: 20px; max-width: 500px; margin: auto; }
     .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    input, select, button { width: 100%; padding: 10px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
+    input, select, textarea, button { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
     button { background: #ff4757; color: white; border: none; font-weight: bold; cursor: pointer; }
-    .pet-item { border-bottom: 1px solid #eee; padding: 10px 0; }
-    .listen-btn { background: #2ed573; margin-top: 10px; }
+    .pet-item { border-bottom: 1px solid #eee; padding: 15px 0; }
+    .listen-btn { background: #2ed573; margin-top: 5px; }
+    .play-btn { background: #1e90ff; margin-top: 5px; }
+    .warning { color: red; font-size: 0.9em; font-weight: bold; margin-top: 10px; display: block; }
+    .grid { display: flex; gap: 10px; }
+    .grid button { background: #ffa502; }
   </style>
 </head>
 <body>
   <div class="card">
-    <h2>🐶 Tingram Pets</h2>
+    <h2>🐶 Tingram Pets: Profile Setup</h2>
+    
+    <!-- Basic Info -->
     <input type="text" id="petName" placeholder="Pet Name (e.g., Max)">
     <input type="text" id="petBreed" placeholder="Breed (e.g., Golden Retriever)">
     <select id="petSpecies">
       <option value="Dog">Dog</option>
       <option value="Cat">Cat</option>
     </select>
-    <button id="addPetBtn">Add Pet</button>
+    <input type="number" id="petAge" placeholder="Age in years (e.g., 2)">
+    <input type="text" id="petLocation" placeholder="Location (Nearby Search)">
+
+    <!-- Deep Stats -->
+    <select id="petStatus">
+      <option value="Single">Single</option>
+      <option value="Married">Married</option>
+      <option value="Divorced">Divorced</option>
+    </select>
+    <input type="number" id="petBabies" placeholder="Number of Babies/Offspring">
+    
+    <select id="petPersonality">
+      <option value="Introvert">Introvert (Shy)</option>
+      <option value="Extrovert">Extrovert (Outgoing)</option>
+    </select>
+    
+    <select id="petVaccine">
+      <option value="Vaccinated">Vaccinated</option>
+      <option value="Not Vaccinated">Not Vaccinated</option>
+    </select>
+    
+    <label style="font-size: 0.9em; color: #555;">Last time met someone:</label>
+    <input type="date" id="petLastMet">
+
+    <select id="petHuman">
+      <option value="Likes Human">I like my human owner</option>
+      <option value="Dislikes Human">I don't like my human owner</option>
+    </select>
+
+    <input type="text" id="petFood" placeholder="Favorite Food">
+    <input type="text" id="petTalent" placeholder="Special Talents">
+    <textarea id="petDesc" rows="3" placeholder="Write a detailed bio..."></textarea>
+
+    <!-- Media & Filters -->
+    <label class="warning">⚠️ NO HUMANS ALLOWED IN UPLOADS!</label>
+    <input type="file" id="petMedia" accept="image/*,video/*">
+    <select id="petFilter">
+      <option value="None">No Photo Filter</option>
+      <option value="Catnip Glow">Catnip Glow (Cats)</option>
+      <option value="Golden Hour Fetch">Golden Hour Fetch (Dogs)</option>
+    </select>
+
+    <button id="addPetBtn">Create Profile</button>
+  </div>
+
+  <!-- Storefront (Affiliate Model) -->
+  <div class="card">
+    <h3>🛍️ Tingram Store (Zero Paperwork)</h3>
+    <p style="font-size:0.9em; color:#666;">Browse affiliate gear. No setup required!</p>
+    <div class="grid">
+      <button>🐾 Dog Accessories</button>
+      <button>🧶 Cat Clothing</button>
+    </div>
+  </div>
+
+  <!-- Entertainment Feed -->
+  <div class="card">
+    <h3>📺 Pet Entertainment Feed</h3>
+    <div id="videoFeed" style="background:#eee; height:100px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#888;">
+      [Shows laser pointers for Cats, Frisbees for Dogs]
+    </div>
   </div>
 
   <div class="card">
-    <h3>Matches</h3>
+    <h3>Matches Nearby</h3>
     <div id="petsList">Loading...</div>
   </div>
 
@@ -56,9 +122,6 @@
 
     const addBtn = document.getElementById("addPetBtn");
     const list = document.getElementById("petsList");
-    const nameInput = document.getElementById("petName");
-    const breedInput = document.getElementById("petBreed");
-    const speciesInput = document.getElementById("petSpecies");
 
     // Initialize Web Speech API for listening
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -70,35 +133,46 @@
     }
 
     addBtn.addEventListener("click", async () => {
-      if (!nameInput.value || !breedInput.value) return alert("Fill all fields!");
+      const name = document.getElementById("petName").value;
+      const breed = document.getElementById("petBreed").value;
+      if (!name || !breed) return alert("Fill Name and Breed!");
+      
       addBtn.textContent = "Adding...";
       
       await addDoc(collection(db, "pets"), {
-        name: nameInput.value,
-        breed: breedInput.value,
-        species: speciesInput.value,
+        name: name,
+        breed: breed,
+        species: document.getElementById("petSpecies").value,
+        age: document.getElementById("petAge").value,
+        location: document.getElementById("petLocation").value,
+        status: document.getElementById("petStatus").value,
+        babies: document.getElementById("petBabies").value,
+        personality: document.getElementById("petPersonality").value,
+        vaccine: document.getElementById("petVaccine").value,
+        lastMet: document.getElementById("petLastMet").value,
+        humanFeeling: document.getElementById("petHuman").value,
+        food: document.getElementById("petFood").value,
+        talent: document.getElementById("petTalent").value,
+        desc: document.getElementById("petDesc").value,
+        filter: document.getElementById("petFilter").value,
         timestamp: new Date()
       });
 
-      nameInput.value = "";
-      breedInput.value = "";
-      addBtn.textContent = "Add Pet";
+      // Clear main fields
+      document.getElementById("petName").value = "";
+      document.getElementById("petBreed").value = "";
+      addBtn.textContent = "Create Profile";
       loadPets();
     });
 
-    // Handle microphone button clicks
+    // Handle microphone and speaker button clicks
     list.addEventListener("click", (e) => {
       if (e.target.classList.contains("listen-btn")) {
         const petName = e.target.dataset.name;
-        
-        if (!recognition) {
-          alert("Microphone not supported on this browser.");
-          return;
-        }
+        if (!recognition) return alert("Microphone not supported.");
         
         e.target.textContent = "🎙️ Listening to you...";
         e.target.style.background = "#ff4757";
-
         recognition.start();
 
         recognition.onresult = (event) => {
@@ -108,11 +182,16 @@
           e.target.style.background = "#2ed573";
         };
 
-        recognition.onerror = (event) => {
+        recognition.onerror = () => {
           alert("Microphone error. Try again.");
           e.target.textContent = `🎤 Speak to ${petName}`;
           e.target.style.background = "#2ed573";
         };
+      }
+      
+      if (e.target.classList.contains("play-btn")) {
+        const petName = e.target.dataset.name;
+        alert(`🔊 Playing AI voice response from ${petName}... (Audio player placeholder)`);
       }
     });
 
@@ -123,11 +202,20 @@
         const pet = doc.data();
         const icon = pet.species === "Cat" ? "🐱" : "🐶";
         
-        // Added the new Speak button without removing any existing data display
         list.innerHTML += `
           <div class="pet-item">
-            ${icon} <strong>${pet.name}</strong> - ${pet.breed} (${pet.species})
-            <button class="listen-btn" data-name="${pet.name}" data-species="${pet.species}">🎤 Speak to ${pet.name}</button>
+            <div style="font-size: 1.2em; margin-bottom: 5px;">${icon} <strong>${pet.name}</strong> (${pet.age || '?'} yrs)</div>
+            <div style="font-size: 0.9em; color: #555;">
+              <strong>Breed:</strong> ${pet.breed} | <strong>Location:</strong> ${pet.location || 'Unknown'} <br>
+              <strong>Status:</strong> ${pet.status} (${pet.babies || '0'} babies) | <strong>Personality:</strong> ${pet.personality} <br>
+              <strong>Owner:</strong> ${pet.humanFeeling} | <strong>Vaccinated:</strong> ${pet.vaccine} <br>
+              <strong>Talent:</strong> ${pet.talent} | <strong>Fav Food:</strong> ${pet.food}
+            </div>
+            <p style="font-size: 0.9em; margin: 10px 0;"><em>"${pet.desc || 'No bio provided.'}"</em></p>
+            <div style="display:flex; gap:10px;">
+              <button class="listen-btn" data-name="${pet.name}">🎤 Speak to ${pet.name}</button>
+              <button class="play-btn" data-name="${pet.name}">🔊 Hear ${pet.name}</button>
+            </div>
           </div>
         `;
       });
