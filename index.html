@@ -14,7 +14,7 @@
 </head>
 <body>
   <div class="card">
-    <h2>🐶 Tingram</h2>
+    <h2>🐶 Tingram Pets</h2>
     <input type="text" id="petName" placeholder="Pet Name (e.g., Max)">
     <input type="text" id="petBreed" placeholder="Breed (e.g., Golden Retriever)">
     <button id="addPetBtn">Add Pet</button>
@@ -30,15 +30,21 @@
     import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
     import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
 
-    // ⚠️ DELETE THIS DUMMY BLOCK AND PASTE YOUR REAL FIREBASE CONFIG HERE:
-    
+    // ⚠️ REPLACE THIS ENTIRE BLOCK WITH YOUR REAL FIREBASE KEYS:
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "tingram-test-b3213.firebaseapp.com",
+      projectId: "tingram-test-b3213",
+      storageBucket: "tingram-test-b3213.appspot.com",
+      messagingSenderId: "YOUR_SENDER_ID",
+      appId: "YOUR_APP_ID",
+      measurementId: "YOUR_MEASUREMENT_ID"
+    };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // Sign in anonymously and load data
     signInAnonymously(auth).then(() => {
       loadPets();
     }).catch((error) => console.error("Auth error:", error));
@@ -48,7 +54,6 @@
     const nameInput = document.getElementById("petName");
     const breedInput = document.getElementById("petBreed");
 
-    // Save a new pet to Firestore
     addBtn.addEventListener("click", async () => {
       if (!nameInput.value || !breedInput.value) return alert("Fill all fields!");
       addBtn.textContent = "Adding...";
@@ -65,7 +70,6 @@
       loadPets();
     });
 
-    // Fetch and display pets from Firestore
     async function loadPets() {
       const querySnapshot = await getDocs(collection(db, "pets"));
       list.innerHTML = "";
