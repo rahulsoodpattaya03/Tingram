@@ -1,226 +1,185 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Tingram - Pet Matchmaking</title>
-  <style>
-    body { font-family: sans-serif; background: #f4f4f9; padding: 20px; max-width: 500px; margin: auto; }
-    .card { background: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); margin-bottom: 20px; }
-    input, select, textarea, button { width: 100%; padding: 10px; margin: 8px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; }
-    button { background: #ff4757; color: white; border: none; font-weight: bold; cursor: pointer; }
-    .pet-item { border-bottom: 1px solid #eee; padding: 15px 0; }
-    .listen-btn { background: #2ed573; margin-top: 5px; }
-    .play-btn { background: #1e90ff; margin-top: 5px; }
-    .warning { color: red; font-size: 0.9em; font-weight: bold; margin-top: 10px; display: block; }
-    .grid { display: flex; gap: 10px; }
-    .grid button { background: #ffa502; }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tingram Atelier — Luxury Collection</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Smooth transitions for zoom and swap */
+        .fade-in { animation: fadeIn 0.4s ease forwards; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        /* Custom scrollbar for clothing rail */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
 </head>
-<body>
-  <div class="card">
-    <h2>🐶 Tingram Pets: Profile Setup</h2>
-    
-    <!-- Basic Info -->
-    <input type="text" id="petName" placeholder="Pet Name (e.g., Max)">
-    <input type="text" id="petBreed" placeholder="Breed (e.g., Golden Retriever)">
-    <select id="petSpecies">
-      <option value="Dog">Dog</option>
-      <option value="Cat">Cat</option>
-    </select>
-    <input type="number" id="petAge" placeholder="Age in years (e.g., 2)">
-    <input type="text" id="petLocation" placeholder="Location (Nearby Search)">
+<body class="bg-[#F4F4F4] text-neutral-900 font-sans select-none overflow-hidden h-screen flex flex-col justify-between">
 
-    <!-- Deep Stats -->
-    <select id="petStatus">
-      <option value="Single">Single</option>
-      <option value="Married">Married</option>
-      <option value="Divorced">Divorced</option>
-    </select>
-    <input type="number" id="petBabies" placeholder="Number of Babies/Offspring">
-    
-    <select id="petPersonality">
-      <option value="Introvert">Introvert (Shy)</option>
-      <option value="Extrovert">Extrovert (Outgoing)</option>
-    </select>
-    
-    <select id="petVaccine">
-      <option value="Vaccinated">Vaccinated</option>
-      <option value="Not Vaccinated">Not Vaccinated</option>
-    </select>
-    
-    <label style="font-size: 0.9em; color: #555;">Last time met someone:</label>
-    <input type="date" id="petLastMet">
+    <!-- Top Brand Bar -->
+    <header class="flex justify-between items-center px-8 py-6 border-b border-neutral-300 z-20 bg-[#F4F4F4]/90 backdrop-blur-md">
+        <h1 class="text-sm tracking-[0.2em] uppercase font-semibold">TINGRAM ATELIER</h1>
+        <span class="text-xs text-neutral-500 tracking-widest">COLLECTION 2026</span>
+    </header>
 
-    <select id="petHuman">
-      <option value="Likes Human">I like my human owner</option>
-      <option value="Dislikes Human">I don't like my human owner</option>
-    </select>
-
-    <input type="text" id="petFood" placeholder="Favorite Food">
-    <input type="text" id="petTalent" placeholder="Special Talents">
-    <textarea id="petDesc" rows="3" placeholder="Write a detailed bio..."></textarea>
-
-    <!-- Media & Filters -->
-    <label class="warning">⚠️ NO HUMANS ALLOWED IN UPLOADS!</label>
-    <input type="file" id="petMedia" accept="image/*,video/*">
-    <select id="petFilter">
-      <option value="None">No Photo Filter</option>
-      <option value="Catnip Glow">Catnip Glow (Cats)</option>
-      <option value="Golden Hour Fetch">Golden Hour Fetch (Dogs)</option>
-    </select>
-
-    <button id="addPetBtn">Create Profile</button>
-  </div>
-
-  <!-- Storefront (Affiliate Model) -->
-  <div class="card">
-    <h3>🛍️ Tingram Store (Zero Paperwork)</h3>
-    <p style="font-size:0.9em; color:#666;">Browse affiliate gear. No setup required!</p>
-    <div class="grid">
-      <button>🐾 Dog Accessories</button>
-      <button>🧶 Cat Clothing</button>
-    </div>
-  </div>
-
-  <!-- Entertainment Feed -->
-  <div class="card">
-    <h3>📺 Pet Entertainment Feed</h3>
-    <div id="videoFeed" style="background:#eee; height:100px; border-radius:5px; display:flex; align-items:center; justify-content:center; color:#888;">
-      [Shows laser pointers for Cats, Frisbees for Dogs]
-    </div>
-  </div>
-
-  <div class="card">
-    <h3>Matches Nearby</h3>
-    <div id="petsList">Loading...</div>
-  </div>
-
-  <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
-    import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-auth.js";
-
-    // ⚠️ ONLY PASTE INSIDE THE QUOTES. DO NOT DELETE ANY BRACKETS OR COMMAS.
-    const firebaseConfig = {
-      apiKey: "AIzaSyCZRdqEhTdTRxM4h6KJS3a6014bhkhUI8A",
-      authDomain: "tingram-test-b3213.firebaseapp.com",
-      projectId: "tingram-test-b3213",
-      storageBucket: "tingram-test-b3213.firebasestorage.app",
-      messagingSenderId: "166205588183",
-      appId: "PASTE_YOUR_APP_ID_HERE",
-      measurementId: "G-32WF9L8973"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const auth = getAuth(app);
-
-    signInAnonymously(auth).then(() => {
-      loadPets();
-    }).catch((error) => console.error("Auth error:", error));
-
-    const addBtn = document.getElementById("addPetBtn");
-    const list = document.getElementById("petsList");
-
-    // Initialize Web Speech API for listening
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognition;
-    if (SpeechRecognition) {
-      recognition = new SpeechRecognition();
-      recognition.continuous = false;
-      recognition.interimResults = false;
-    }
-
-    addBtn.addEventListener("click", async () => {
-      const name = document.getElementById("petName").value;
-      const breed = document.getElementById("petBreed").value;
-      if (!name || !breed) return alert("Fill Name and Breed!");
-      
-      addBtn.textContent = "Adding...";
-      
-      await addDoc(collection(db, "pets"), {
-        name: name,
-        breed: breed,
-        species: document.getElementById("petSpecies").value,
-        age: document.getElementById("petAge").value,
-        location: document.getElementById("petLocation").value,
-        status: document.getElementById("petStatus").value,
-        babies: document.getElementById("petBabies").value,
-        personality: document.getElementById("petPersonality").value,
-        vaccine: document.getElementById("petVaccine").value,
-        lastMet: document.getElementById("petLastMet").value,
-        humanFeeling: document.getElementById("petHuman").value,
-        food: document.getElementById("petFood").value,
-        talent: document.getElementById("petTalent").value,
-        desc: document.getElementById("petDesc").value,
-        filter: document.getElementById("petFilter").value,
-        timestamp: new Date()
-      });
-
-      // Clear main fields
-      document.getElementById("petName").value = "";
-      document.getElementById("petBreed").value = "";
-      addBtn.textContent = "Create Profile";
-      loadPets();
-    });
-
-    // Handle microphone and speaker button clicks
-    list.addEventListener("click", (e) => {
-      if (e.target.classList.contains("listen-btn")) {
-        const petName = e.target.dataset.name;
-        if (!recognition) return alert("Microphone not supported.");
+    <!-- Main Dynamic Stage -->
+    <main id="app-stage" class="flex-1 flex items-center justify-center relative w-full overflow-hidden">
         
-        e.target.textContent = "🎙️ Listening to you...";
-        e.target.style.background = "#ff4757";
-        recognition.start();
+        <!-- VIEW 1: THE CLOSET RAIL (Default) -->
+        <div id="rail-view" class="relative w-full h-full flex flex-col justify-center items-center fade-in">
+            <!-- Metal Rod Graphic -->
+            <div class="absolute top-[32%] w-[85%] max-w-5xl h-[3px] bg-neutral-300 shadow-inner rounded-full"></div>
 
-        recognition.onresult = (event) => {
-          const transcript = event.results[0][0].transcript;
-          alert(`You said to ${petName}: "${transcript}"\n\n(Next, ElevenLabs will process this and speak back!)`);
-          e.target.textContent = `🎤 Speak to ${petName}`;
-          e.target.style.background = "#2ed573";
+            <!-- Hanging Items Container -->
+            <div class="flex gap-16 z-10 overflow-x-auto px-12 items-start pt-16 max-w-full no-scrollbar">
+                
+                <!-- Item 1 -->
+                <div onclick="openItem(1)" class="cursor-pointer flex flex-col items-center group flex-shrink-0 transition-transform duration-300 hover:-translate-y-2">
+                    <div class="w-36 h-72 flex items-center justify-center">
+                        <!-- Replace with your transparent PNG links or asset paths -->
+                        <img src="https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=600&auto=format&fit=crop" alt="Tank Top" class="max-h-full max-w-full object-contain drop-shadow-2xl pointer-events-none group-hover:scale-105 transition-transform">
+                    </div>
+                    <span class="mt-6 text-[10px] tracking-[0.25em] text-neutral-500 group-hover:text-black uppercase transition-colors">DISTRESSED TANK TOP</span>
+                </div>
+
+                <!-- Item 2 -->
+                <div onclick="openItem(2)" class="cursor-pointer flex flex-col items-center group flex-shrink-0 transition-transform duration-300 hover:-translate-y-2">
+                    <div class="w-36 h-72 flex items-center justify-center">
+                        <img src="https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop" alt="Cashmere Hoodie" class="max-h-full max-w-full object-contain drop-shadow-2xl pointer-events-none group-hover:scale-105 transition-transform">
+                    </div>
+                    <span class="mt-6 text-[10px] tracking-[0.25em] text-neutral-500 group-hover:text-black uppercase transition-colors">CASHMERE HOODIE</span>
+                </div>
+
+                <!-- Item 3 -->
+                <div onclick="openItem(3)" class="cursor-pointer flex flex-col items-center group flex-shrink-0 transition-transform duration-300 hover:-translate-y-2">
+                    <div class="w-36 h-72 flex items-center justify-center">
+                        <img src="https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop" alt="Leather Bomber" class="max-h-full max-w-full object-contain drop-shadow-2xl pointer-events-none group-hover:scale-105 transition-transform">
+                    </div>
+                    <span class="mt-6 text-[10px] tracking-[0.25em] text-neutral-500 group-hover:text-black uppercase transition-colors">LEATHER BOMBER</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- VIEW 2: ZOOMED ITEM VIEW (Hidden by default) -->
+        <div id="detail-view" class="hidden w-full h-full flex flex-col items-center justify-center relative px-6 fade-in">
+            <!-- Back to Rail Button -->
+            <button onclick="closeItem()" class="absolute top-8 left-10 text-[11px] tracking-[0.2em] uppercase underline text-neutral-500 hover:text-black transition-colors">
+                ← Back to Rail
+            </button>
+
+            <!-- Garment Display Area -->
+            <div class="h-[42vh] flex items-center justify-center relative mt-4">
+                <img id="detail-img" src="" alt="Selected Garment" class="max-h-full object-contain drop-shadow-2xl transition-all duration-300">
+            </div>
+
+            <!-- Front / Back Toggle Selector -->
+            <div class="flex gap-3 mt-8 bg-neutral-200/80 p-1.5 rounded-full text-xs shadow-inner">
+                <button id="btn-front" onclick="switchSide('front')" class="px-5 py-2 rounded-full transition-all tracking-wider bg-black text-white shadow-md">FRONT</button>
+                <button id="btn-back" onclick="switchSide('back')" class="px-5 py-2 rounded-full transition-all tracking-wider text-neutral-600 hover:text-black">BACK</button>
+            </div>
+
+            <!-- Product Title & Affiliate Action -->
+            <h2 id="detail-title" class="mt-5 text-sm font-medium tracking-[0.15em] text-center">PRODUCT TITLE</h2>
+            
+            <a id="detail-link" href="#" target="_blank" rel="noopener noreferrer" class="mt-5 bg-black text-white px-10 py-3.5 text-xs tracking-[0.25em] uppercase hover:bg-neutral-800 transition-all shadow-lg hover:scale-105 active:scale-95">
+                See Availability — $450
+            </a>
+        </div>
+
+    </main>
+
+    <!-- Marquee Ticker Footer -->
+    <footer class="w-full bg-black text-white py-3 overflow-hidden whitespace-nowrap text-[11px] tracking-[0.3em] z-20">
+        <div class="inline-block uppercase">
+            ✦ TINGRAM 2026 ✦ EXCLUSIVE LUXURY PARTNERSHIPS ✦ WORLDWIDE CURATED DROPS ✦ IT'S US, NEVER THEM ✦ 
+        </div>
+    </footer>
+
+    <!-- Interactive JavaScript Logic -->
+    <script>
+        // Catalog Database (Easily add your items & affiliate tracking links here)
+        const catalog = {
+            1: {
+                name: "DISTRESSED PAINTED LOGO TANK TOP",
+                front: "https://images.unsplash.com/photo-1583743814966-8936f5b7be1a?q=80&w=600&auto=format&fit=crop",
+                back: "https://images.unsplash.com/photo-1521572267360-ee0c2909d518?q=80&w=600&auto=format&fit=crop",
+                price: "$450",
+                url: "https://www.farfetch.com" // Your affiliate link
+            },
+            2: {
+                name: "OVERSIZED RAW EDGE CASHMERE HOODIE",
+                front: "https://images.unsplash.com/photo-1556905055-8f358a7a47b2?q=80&w=600&auto=format&fit=crop",
+                back: "https://images.unsplash.com/photo-1509631179647-0177331693ae?q=80&w=600&auto=format&fit=crop",
+                price: "$1,250",
+                url: "https://www.ssense.com"
+            },
+            3: {
+                name: "VINTAGE WASHED LEATHER BOMBER",
+                front: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop",
+                back: "https://images.unsplash.com/photo-1548883354-7622d03aca27?q=80&w=600&auto=format&fit=crop",
+                price: "$2,800",
+                url: "https://www.net-a-porter.com"
+            }
         };
 
-        recognition.onerror = () => {
-          alert("Microphone error. Try again.");
-          e.target.textContent = `🎤 Speak to ${petName}`;
-          e.target.style.background = "#2ed573";
-        };
-      }
-      
-      if (e.target.classList.contains("play-btn")) {
-        const petName = e.target.dataset.name;
-        alert(`🔊 Playing AI voice response from ${petName}... (Audio player placeholder)`);
-      }
-    });
+        let currentId = null;
+        let currentSide = 'front';
 
-    async function loadPets() {
-      const querySnapshot = await getDocs(collection(db, "pets"));
-      list.innerHTML = "";
-      querySnapshot.forEach((doc) => {
-        const pet = doc.data();
-        const icon = pet.species === "Cat" ? "🐱" : "🐶";
-        
-        list.innerHTML += `
-          <div class="pet-item">
-            <div style="font-size: 1.2em; margin-bottom: 5px;">${icon} <strong>${pet.name}</strong> (${pet.age || '?'} yrs)</div>
-            <div style="font-size: 0.9em; color: #555;">
-              <strong>Breed:</strong> ${pet.breed} | <strong>Location:</strong> ${pet.location || 'Unknown'} <br>
-              <strong>Status:</strong> ${pet.status} (${pet.babies || '0'} babies) | <strong>Personality:</strong> ${pet.personality} <br>
-              <strong>Owner:</strong> ${pet.humanFeeling} | <strong>Vaccinated:</strong> ${pet.vaccine} <br>
-              <strong>Talent:</strong> ${pet.talent} | <strong>Fav Food:</strong> ${pet.food}
-            </div>
-            <p style="font-size: 0.9em; margin: 10px 0;"><em>"${pet.desc || 'No bio provided.'}"</em></p>
-            <div style="display:flex; gap:10px;">
-              <button class="listen-btn" data-name="${pet.name}">🎤 Speak to ${pet.name}</button>
-              <button class="play-btn" data-name="${pet.name}">🔊 Hear ${pet.name}</button>
-            </div>
-          </div>
-        `;
-      });
-      if(list.innerHTML === "") list.innerHTML = "No pets added yet.";
-    }
-  </script>
+        function openItem(id) {
+            currentId = id;
+            currentSide = 'front';
+            const item = catalog[id];
+
+            document.getElementById('detail-img').src = item.front;
+            document.getElementById('detail-title').innerText = item.name;
+            document.getElementById('detail-link').href = item.url;
+            document.getElementById('detail-link').innerText = `See Availability — ${item.price}`;
+
+            // Switch views
+            document.getElementById('rail-view').classList.add('hidden');
+            document.getElementById('detail-view').classList.remove('hidden');
+            updateToggleUI();
+        }
+
+        function closeItem() {
+            currentId = null;
+            document.getElementById('detail-view').classList.add('hidden');
+            document.getElementById('rail-view').classList.remove('hidden');
+        }
+
+        function switchSide(side) {
+            if (!currentId) return;
+            currentSide = side;
+            const item = catalog[currentId];
+            
+            const imgElement = document.getElementById('detail-img');
+            imgElement.classList.add('opacity-0', 'translate-y-2');
+            
+            setTimeout(() => {
+                imgElement.src = side === 'front' ? item.front : item.back;
+                imgElement.classList.remove('opacity-0', 'translate-y-2');
+            }, 150);
+
+            updateToggleUI();
+        }
+
+        function updateToggleUI() {
+            const btnFront = document.getElementById('btn-front');
+            const btnBack = document.getElementById('btn-back');
+
+            if (currentSide === 'front') {
+                btnFront.className = "px-5 py-2 rounded-full transition-all tracking-wider bg-black text-white shadow-md";
+                btnBack.className = "px-5 py-2 rounded-full transition-all tracking-wider text-neutral-600 hover:text-black";
+            } else {
+                btnBack.className = "px-5 py-2 rounded-full transition-all tracking-wider bg-black text-white shadow-md";
+                btnFront.className = "px-5 py-2 rounded-full transition-all tracking-wider text-neutral-600 hover:text-black";
+            }
+        }
+    </script>
 </body>
 </html>
